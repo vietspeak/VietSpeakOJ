@@ -19,6 +19,8 @@ def test_standardize_word_valid():
     assert Dictionary._standardize_word(word_2) == "I'M"
     word_3 = "I’m"
     assert Dictionary._standardize_word(word_3) == "I'M"
+    word_4 = "time-consuming"
+    assert Dictionary._standardize_word(word_4) == "TIME-CONSUMING"
 
 
 def test_standardize_word_begin_of_sentence():

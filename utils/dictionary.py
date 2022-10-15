@@ -23,7 +23,7 @@ class Dictionary:
     @classmethod
     def _standardize_word(cls, word: str) -> str:
         word = cls._remove_smart_quotes(word.upper())
-        find_word = re.search("[A-Z]+'?[A-Z]*", word)
+        find_word = re.search("[A-Z]+['-]?[A-Z]*", word)
         if find_word:
             return find_word[0]
         return None
