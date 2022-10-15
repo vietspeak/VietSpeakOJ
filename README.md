@@ -10,5 +10,5 @@ python3 installer.py
 
 ## Testing
 ```
-coverage run -m pytest tests/test_dictionary.py && coverage report --show-missing
+coverage run -m pytest tests && coverage report --show-missing
 ```

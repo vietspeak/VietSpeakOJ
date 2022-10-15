@@ -1,15 +1,5 @@
-from typing import Dict
-
-from pytest import fixture
-from sqlalchemy.orm import Session
-
-from model.model import engine
 from utils.dictionary import Dictionary
-
-
-@fixture
-def session() -> Session:
-    return Session(engine)
+from sqlalchemy.orm import Session
 
 
 def test_standardize_word_valid():
