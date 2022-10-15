@@ -1,5 +1,6 @@
-from utils.dictionary import Dictionary
 from sqlalchemy.orm import Session
+
+from utils.dictionary import Dictionary
 
 
 def test_standardize_word_valid():
