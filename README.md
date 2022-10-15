@@ -5,6 +5,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 conda create -n vietspeakgrader python black isort pytest pytest-cov sqlalchemy
 conda activate vietspeakgrader
+python3 installer.py
 ```
 
 ## Testing
