@@ -11,8 +11,12 @@ class Dictionary:
         self.session = session
 
     @classmethod
+    def _remove_smart_quotes(cls, word: str) -> str:
+        return word.replace(u"\u2018", "'").replace(u"\u2019", "'").replace(u"\u201c",'"').replace(u"\u201d",'"')
+    
+    @classmethod
     def _standardize_word(cls, word: str) -> str:
-        word = word.upper()
+        word = cls._remove_smart_quotes(word.upper())
         find_word = re.search("[A-Z]+'?[A-Z]*", word)
         if find_word:
             return find_word[0]
