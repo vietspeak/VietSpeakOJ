@@ -1,5 +1,4 @@
 from typing import List
-from model.model import CMUPronunciation
 
 from model.model import CMUPronunciation
 from utils.dictionary import Dictionary
@@ -30,6 +29,7 @@ class GradingTranscript:
         )
         return " ".join(longest_common)
 
+
 class LegacyGrader:
     def __init__(self, dictionary: Dictionary):
         self.dictionary = dictionary
@@ -57,7 +57,6 @@ class LegacyGrader:
         for arpa in arpabets:
             result += arpa
         return result
-
 
     def grader(self, student_script: str, grading_script: str) -> float:
         student_arpabet = self._get_chosen_arpabet_script(student_script)
