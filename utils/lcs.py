@@ -1,10 +1,18 @@
+from dataclasses import dataclass
 from functools import cache
-from typing import Hashable, List
+from typing import Hashable, List, Tuple
 
-
+@dataclass
+class LCSResult:
+    values : List[Hashable]
+    locations : List[Tuple[int, int]]
+    
+    def __len__(self) -> int:
+        return len(self.values)
+    
 class LongestCommonSubsequence:
     @classmethod
-    def solve(cls, seq_1: List[Hashable], seq_2: List[Hashable]) -> List[Hashable]:
+    def solve(cls, seq_1: List[Hashable], seq_2: List[Hashable]) -> LCSResult:
         n = len(seq_1)
         m = len(seq_2)
 
@@ -19,7 +27,7 @@ class LongestCommonSubsequence:
 
             return result
 
-        def trace_reverse(x, y):
+        def trace_reverse(x, y) -> List[Tuple[int, int]]:
             if x == n or y == m:
                 return []
 
@@ -32,11 +40,11 @@ class LongestCommonSubsequence:
 
             if seq_1[x] == seq_2[y] and result == dp(x + 1, y + 1) + 1:
                 tmp = trace_reverse(x + 1, y + 1)
-                tmp.append(x)
+                tmp.append((x,y))
                 return tmp
 
         dp(0, 0)
         trace_result = trace_reverse(0, 0)
         trace_result.reverse()
-        result = [seq_1[x] for x in trace_result]
-        return result
+        values = [seq_1[x[0]] for x in trace_result]
+        return LCSResult(values, trace_result)

@@ -26,7 +26,7 @@ class GradingTranscript:
         ]
         longest_common: List[str] = LongestCommonSubsequence.solve(
             sample_pronounce, audio_pronounce
-        )
+        ).values
         return " ".join(longest_common)
 
 
