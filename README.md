@@ -5,11 +5,17 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask
 conda activate vietspeakoj
-sudo apt-get install ffmpeg unzip
-pip3 install vosk
+sudo apt-get install ffmpeg unzip ngrok
+pip3 install vosk slack_bolt
 mkdir database
 mkdir vosk_model
 python3 installer.py
+```
+
+Add the following lines to the end of your `.bashrc` file
+```
+export SLACK_BOT_TOKEN=<your Slack bot token>
+export SLACK_SIGNING_SECRET=<your Slack signing secret>
 ```
 
 Download a model from https://alphacephei.com/vosk/models, and unzip the model. Then, rename the new folder `vosk_model`
