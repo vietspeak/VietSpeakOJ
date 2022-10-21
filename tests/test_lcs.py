@@ -7,7 +7,7 @@ def test_lcs_equal_case():
     result = LongestCommonSubsequence.solve(seq_1, seq_2)
     assert len(result) == 4
     assert result.values == [5, 2, 3, 4]
-    assert result.locations == [(i,i) for i in range(4)]
+    assert result.locations == [(i, i) for i in range(4)]
 
 
 def test_lcs_diff_len():

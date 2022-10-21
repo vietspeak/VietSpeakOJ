@@ -1,4 +1,5 @@
 from typing import Iterable
+
 from pytest import fixture
 from sqlalchemy.orm import Session
 

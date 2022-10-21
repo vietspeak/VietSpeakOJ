@@ -1,16 +1,9 @@
+import enum
 import json
 from typing import Any, List
 
-from sqlalchemy import (
-    BLOB,
-    TIMESTAMP,
-    Boolean,
-    Column,
-    ForeignKey,
-    Integer,
-    String,
-    create_engine,
-)
+from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, ForeignKey,
+                        Integer, String, create_engine)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
@@ -43,42 +36,22 @@ class CMUPronunciation(Base):
         )
 
 
-class SlackAudioFile(Base):
-    __tablename__ = "slack_audio_files"
-
-    id = Column(Integer, primary_key=True)
-    file_id = Column(String)
-    transcript_id = Column(Integer, ForeignKey("transcripts.id"), default=None)
-    last_update = Column(
-        TIMESTAMP, server_default=func.now(), onupdate=func.current_timestamp()
-    )
-
-    def __repr__(self):
-        attrs = ["id", "file_id", "transcript_id", "last_update"]
-        return generate_repr(self, "SlackAudioFile", attrs)
+class FileSource(enum.Enum):
+    SLACK = 0
+    WEBSITE = 1
 
 
 class AudioFile(Base):
-    __tablename__ = "website_audio_files"
+    __tablename__ = "audio_files"
 
     id = Column(Integer, primary_key=True)
+    source = Column(Enum(FileSource))
     content = Column(BLOB)
-    transcript_id = Column(Integer, ForeignKey("transcripts.id"), default=None)
-
-    def __repr__(self):
-        attrs = ["id", "content", "transcript_id"]
-        return generate_repr(self, "AudioFile", attrs)
-
-
-class Transcript(Base):
-    __tablename__ = "transcripts"
-
-    id = Column(Integer, primary_key=True)
     transcript = Column(String)
 
     def __repr__(self):
-        attrs = ["id", "transcript"]
-        return generate_repr(self, "Transcript", attrs)
+        attrs = ["id", "source", "content", "transcript"]
+        return generate_repr(self, "AudioFile", attrs)
 
 
 Base.metadata.create_all(engine)

@@ -3,7 +3,7 @@ import io
 from flask import Flask, flash, redirect, request
 from sqlalchemy.orm import Session
 
-from model.model import AudioFile, engine
+from model.model import AudioFile, FileSource, engine
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
@@ -27,7 +27,7 @@ def upload_file():
             file.save(blob_file)
 
             with Session(engine) as session:
-                row = AudioFile(content=blob_file.getvalue())
+                row = AudioFile(source=FileSource.WEBSITE, content=blob_file.getvalue())
                 session.add(row)
                 session.commit()
 
