@@ -16,6 +16,7 @@ Add the following lines to the end of your `.bashrc` file
 ```
 export SLACK_BOT_TOKEN=<your Slack bot token>
 export SLACK_SIGNING_SECRET=<your Slack signing secret>
+export PORT=<port>
 ```
 
 Download a model from https://alphacephei.com/vosk/models, and unzip the model. Then, rename the new folder `vosk_model`
