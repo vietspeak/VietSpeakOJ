@@ -3,7 +3,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 
 ## Development installation
 ```
-conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask gunicorn
+conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask
 conda activate vietspeakoj
 sudo apt-get install ffmpeg unzip ngrok gunicorn
 pip3 install vosk slack_bolt
