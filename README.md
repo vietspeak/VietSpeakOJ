@@ -5,7 +5,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask gunicorn
 conda activate vietspeakoj
-sudo apt-get install ffmpeg unzip ngrok
+sudo apt-get install ffmpeg unzip ngrok gunicorn
 pip3 install vosk slack_bolt
 mkdir database
 mkdir vosk_model
@@ -26,5 +26,5 @@ coverage run -m pytest tests && coverage report --show-missing
 ## Deployment
 ```
 sudo ufw allow <port>
-gunicorn --bind 0.0.0.0:<port> web_app:app
+gunicorn --bind 0.0.0.0:<port> wsgi:app
 ```
