@@ -3,7 +3,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 
 ## Development installation
 ```
-conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask
+conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask gunicorn
 conda activate vietspeakoj
 sudo apt-get install ffmpeg unzip ngrok
 pip3 install vosk slack_bolt
@@ -22,4 +22,9 @@ Download a model from https://alphacephei.com/vosk/models, and unzip the model. 
 ## Testing
 ```
 coverage run -m pytest tests && coverage report --show-missing
+```
+## Deployment
+```
+sudo ufw allow <port>
+gunicorn --bind 0.0.0.0:<port> web_app:app
 ```
