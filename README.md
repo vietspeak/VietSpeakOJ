@@ -3,10 +3,10 @@ A module that gives pronunciation score based on the audio transcript produced b
 
 ## Development installation
 ```
-conda create -n vietspeakoj python black isort pytest pytest-cov sqlalchemy flask
-conda activate vietspeakoj
-sudo apt-get install ffmpeg unzip ngrok gunicorn
-pip3 install vosk slack_bolt
+python3 -m venv env
+source env/bin/activate
+pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt
+sudo apt-get install ffmpeg unzip
 mkdir database
 mkdir vosk_model
 python3 installer.py
@@ -27,5 +27,5 @@ coverage run -m pytest tests && coverage report --show-missing
 ## Deployment
 ```
 sudo ufw allow <port>
-gunicorn --bind 0.0.0.0:<port> wsgi:app
+gunicorn --bind 0.0.0.0:<port> wsgi:flask_app
 ```
