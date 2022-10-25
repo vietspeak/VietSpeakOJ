@@ -8,7 +8,6 @@ source env/bin/activate
 pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt
 sudo apt-get install ffmpeg unzip
 mkdir database
-mkdir vosk_model
 python3 installer.py
 ```
 
