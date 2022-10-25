@@ -12,11 +12,16 @@ mkdir vosk_model
 python3 installer.py
 ```
 
-Add the following lines to the end of your `.bashrc` file
+Add the following lines to the end of your `~/.bashrc` file
 ```
 export SLACK_BOT_TOKEN=<your Slack bot token>
 export SLACK_SIGNING_SECRET=<your Slack signing secret>
 export PORT=<port>
+```
+
+Run the following command
+```
+. ~/.bashrc
 ```
 
 Download a model from https://alphacephei.com/vosk/models, and unzip the model. Then, rename the new folder `vosk_model`
@@ -26,6 +31,6 @@ coverage run -m pytest tests && coverage report --show-missing
 ```
 ## Deployment
 ```
-sudo ufw allow <port>
-gunicorn --bind 0.0.0.0:<port> wsgi:flask_app
+sudo ufw allow $PORT
+gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
 ```
