@@ -2,9 +2,14 @@
 <title>Create a new task</title>
 <h1>Create a new task</h1>
 <form method=post enctype=multipart/form-data>
-    <input type=text name=task_number>
-    <input type=text name=level>
-    <input type=text name=sample_transcript>
-    <input type=file name=file>
-    <input type=submit value=Upload>
+    <p>Task number: <input type=text name=task_number></p>
+    <p>Level: <select name=level>
+        <option value=yellow>Yellow</option>
+        <option value=green>Green</option>
+        <option value=blue>Blue</option>
+        <option value=red>Red</option>
+    </select></p>
+    <p>Sample transcript: <input type=text name=sample_transcript></p>
+    <p>Sample audio: <input type=file name=file></p>
+    <input type=submit value=Submit>
 </form>
