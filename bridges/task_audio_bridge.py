@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from bridges.transcript_bridge import bytes_to_transcript
+from bridges.submission_audio_bridge import bytes_to_transcript
 from grader.grading_transcript import GradingTranscript
 from model.model import Task, engine
 
