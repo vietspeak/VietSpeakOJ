@@ -2,7 +2,7 @@ import enum
 import json
 from typing import Any, List
 
-from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, ForeignKey,
+from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float, ForeignKey,
                         Integer, String, create_engine)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
@@ -41,17 +41,51 @@ class FileSource(enum.Enum):
     WEBSITE = 1
 
 
-class AudioFile(Base):
-    __tablename__ = "audio_files"
+class TaskLevel(enum.Enum):
+    YELLOW = 0
+    GREEN = 1
+    BLUE = 2
+    RED = 3
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    slack_id = Column(String)
+    email = Column(String)
+    password = Column(String)
+
+
+class Submission(Base):
+    __tablename__ = "submissions"
 
     id = Column(Integer, primary_key=True)
     source = Column(Enum(FileSource))
-    content = Column(BLOB)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    audio_file = Column(BLOB)
     transcript = Column(String)
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
+    score = Column(Float)
 
     def __repr__(self):
-        attrs = ["id", "source", "content", "transcript"]
-        return generate_repr(self, "AudioFile", attrs)
+        attrs = ["id", "source", "audio_file", "transcript"]
+        return generate_repr(self, "Submission", attrs)
+
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id = Column(Integer, primary_key=True)
+    task_number = Column(Integer)
+    level = Column(Enum(TaskLevel))
+    title = Column(String)
+    audio_file = Column(BLOB)
+    sample_transcript = Column(String)
+    grading_transcript = Column(String)
+
+    def __repr__(self):
+        attrs = ["id", "task_number", "level", "title", "audio_file", "sample_transcript", "grading_transcript"]
+        return generate_repr(self, "Task", attrs)
 
 
 Base.metadata.create_all(engine)

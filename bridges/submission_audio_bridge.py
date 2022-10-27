@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from vosk import KaldiRecognizer, Model
 
-from model.model import AudioFile, FileSource, engine
+from model.model import FileSource, Submission
 
 SAMPLE_RATE = 16000
 
@@ -42,16 +42,15 @@ def bytes_to_transcript(file_content: bytes) -> str:
     return ret
 
 
-def entry_point():
+def entry_point(session: Session):
     audio_file = None
-    with Session(engine) as session:
-        stmt = select(AudioFile).where(AudioFile.transcript == None)
-        audio_file: AudioFile = next(session.scalars(stmt), None)
+    stmt = select(Submission).where(Submission.audio_file != None)
+    audio_file: Submission = next(session.scalars(stmt), None)
 
-        if audio_file:
-            if audio_file.source == FileSource.WEBSITE:
-                audio_file.transcript = bytes_to_transcript(audio_file.content)
-            else:
-                audio_file.transcript = ""
-            audio_file.content = None
-            session.commit()
+    if audio_file:
+        if audio_file.source == FileSource.WEBSITE:
+            audio_file.transcript = bytes_to_transcript(audio_file.audio_file)
+        else:
+            audio_file.transcript = ""
+        audio_file.audio_file = None
+        session.commit()
