@@ -1,9 +1,10 @@
-from typing import List
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
 
 from model.model import CMUPronunciation
 from utils.dictionary import Dictionary
 from utils.lcs import LongestCommonSubsequence
-
+from collections import Counter
 
 class GradingTranscript:
     def __init__(self, dictionary: Dictionary):
@@ -30,6 +31,11 @@ class GradingTranscript:
         return " ".join(longest_common)
 
 
+@dataclass
+class Feedback:
+    score: float
+    errors: List[Tuple[str, str]]
+
 class LegacyGrader:
     def __init__(self, dictionary: Dictionary):
         self.dictionary = dictionary
@@ -49,17 +55,57 @@ class LegacyGrader:
 
     def _get_chosen_arpabet_script(self, script: str) -> List[str]:
         pronunciations = self.dictionary.get_pronunciation_from_text(script)
-        arpabets = [
-            self._get_chosen_arpabet(pronounce).arpabet.split()
-            for pronounce in pronunciations
-        ]
+        arpabets: List[str] = []
+        word_ranges: List[Tuple[str, Tuple[int, int]]] = []
         result = []
-        for arpa in arpabets:
-            result += arpa
-        return result
+        ptr = 0
+        for pronounce in pronunciations:
+            cmu_pronunciation = self._get_chosen_arpabet(pronounce)
+            sounds = cmu_pronunciation.arpabet.split()
+            result+=sounds
+            word_ranges.append((cmu_pronunciation.word, (ptr, ptr + len(sounds))))
+            ptr += len(sounds)
+        
+        return result, word_ranges
 
     def grader(self, student_script: str, grading_script: str) -> float:
-        student_arpabet = self._get_chosen_arpabet_script(student_script)
-        grading_arpabet = self._get_chosen_arpabet_script(grading_script)
+        student_arpabet, student_ranges = self._get_chosen_arpabet_script(student_script)
+        grading_arpabet, grading_ranges = self._get_chosen_arpabet_script(grading_script)
         common = LongestCommonSubsequence.solve(student_arpabet, grading_arpabet)
-        return len(common) / max(1, len(grading_arpabet))
+        print(student_arpabet)
+        print(grading_arpabet)
+        print(common)
+
+
+        score = len(common) / max(1, len(grading_arpabet))
+
+        position_to_student_word_indexes: List[int] = [None] * len(student_arpabet)
+        for id, r in enumerate(student_ranges):
+            for x in range(*r[1]):
+                position_to_student_word_indexes[x] = id
+
+        grading_map: Dict[int, int] = {}
+        for pair in common.locations:
+            grading_map[pair[1]] = pair[0]
+
+        
+        errors = []
+        for id, r in enumerate(grading_ranges):
+            mistake = False
+            for x in range(*r[1]):
+                if x not in grading_map:
+                    mistake = True
+                    break
+            
+            if mistake:
+                matches_word = [position_to_student_word_indexes[grading_map[x]] for x in range(*r[1]) if x in grading_map]
+                if not matches_word:
+                    errors.append((r[0], None))
+                else:
+                    most_common_match = Counter(matches_word).most_common(1)[0][0]
+                    errors.append((r[0], student_ranges[most_common_match][0]))
+        
+
+        return Feedback(score=score, errors=errors)
+
+            
