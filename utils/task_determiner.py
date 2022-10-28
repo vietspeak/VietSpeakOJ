@@ -24,25 +24,23 @@ class TaskDeterminer:
         stmt = select(Task).where(Task.id > max_task_id).order_by(Task.id)
         new_tasks: List[Task] = list(self.session.scalars(stmt))
 
-        need_to_retrain = len(self.task_ids) < MAX_TRAINING_TRANSCRIPTS
-
+        if not new_tasks:
+            return
+        
         for task in new_tasks:
             self.task_ids.append(task.id)
             self.corpus.append(task.grading_transcript)
 
-        if need_to_retrain:
-            self.vectorizer = TfidfVectorizer()
-            self.word_matrix = self.vectorizer.fit_transform(
-                self.corpus[:MAX_TRAINING_TRANSCRIPTS]
-            )
+        self.vectorizer = TfidfVectorizer()
+        self.word_matrix = self.vectorizer.fit_transform(self.corpus)
 
-    def detect_task(self, transcript) -> int:
+    def detect_task(self, transcript: str) -> int:
         self._reload_data()
 
         if len(self.task_ids) == 0:
             return None
 
-        transcript_vector = self.vectorizer.transform(transcript)
+        transcript_vector = self.vectorizer.transform([transcript])
         similarities = linear_kernel(transcript_vector, self.word_matrix).flatten()
         best_index = similarities.argsort()[-1]
         return self.task_ids[best_index]
