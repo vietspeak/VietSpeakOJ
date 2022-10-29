@@ -14,6 +14,8 @@ from slack.app import app
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
+from selenium.webdriver.firefox.options import Options
+
 
 SAMPLE_RATE = 16000
 
@@ -54,7 +56,9 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
-    driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()))
+    options = Options()
+    options.headless = True
+    driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
     driver.get(link)
     pageSource = driver.page_source
     return pageSource
