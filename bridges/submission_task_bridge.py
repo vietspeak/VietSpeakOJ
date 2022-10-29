@@ -5,11 +5,10 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 from grader.grading_transcript import LegacyGrader
 from model.model import Submission, Task, User, WordError
-from slack.app import app
-
+from slack_bolt import App
 
 def send_feedback_message(
-    session: Session, task: Task, word_errors: List[WordError], submission: Submission
+    app: App, session: Session, task: Task, word_errors: List[WordError], submission: Submission
 ):
     result = f"Mình xin phép được nhận xét bài {task.level.upper()} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
@@ -36,7 +35,7 @@ def is_complete_submission(submission: Submission) -> bool:
     return submission.transcript and submission.task_id and submission.score
 
 
-def send_cache_feedback(session: Session, completed_submission: Submission):
+def send_cache_feedback(app: App, session: Session, completed_submission: Submission):
     if not is_complete_submission(completed_submission):
         return
 
@@ -47,10 +46,10 @@ def send_cache_feedback(session: Session, completed_submission: Submission):
         WordError.submission_id == completed_submission.id
     )
     word_errors = list(session.scalars(word_error_stmt))
-    send_feedback_message(session, task, word_errors, completed_submission)
+    send_feedback_message(app, session, task, word_errors, completed_submission)
 
 
-def entry_point(session: Session, grader: LegacyGrader):
+def entry_point(app: App, session: Session, grader: LegacyGrader):
     submission_stmt = select(Submission).where(
         and_(Submission.task_id != None, Submission.score == None)
     )
@@ -80,4 +79,4 @@ def entry_point(session: Session, grader: LegacyGrader):
 
         session.commit()
 
-        send_feedback_message(task, word_error_objs, submission)
+        send_feedback_message(app, task, word_error_objs, submission)
