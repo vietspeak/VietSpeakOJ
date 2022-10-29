@@ -49,7 +49,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
             say("Bot chưa biết bạn là ai. Hãy đợi bot 1 phút để tìm hiểu bạn.")
             return
 
-        file_info = app.client.files_info(event.get("file_id"))
+        file_info = app.client.files_info(file=event.get("file_id"))
 
         new_submission = Submission(
             source=FileSource.SLACK,
