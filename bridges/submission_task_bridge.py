@@ -17,7 +17,7 @@ def send_feedback_message(
         return
     
     level_name = str(task.level).split('.')[-1]
-    level_name = level_name[0].upper() + level_name[1:]
+    level_name = level_name[0] + level_name[1:].lower()
     result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
 
