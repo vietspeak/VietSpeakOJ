@@ -132,3 +132,4 @@ dmypy.json
 database/
 vosk_model/
 tmp/
+firefox_drivers/

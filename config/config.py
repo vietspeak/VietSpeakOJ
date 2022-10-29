@@ -1,0 +1,2 @@
+PATH_TO_DATABASE = "./database/db.sqlite"
+MANDATORY_CHANNEL = "C01BY57F29H"
