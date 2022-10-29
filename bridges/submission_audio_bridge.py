@@ -56,13 +56,15 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
-    link = f"{link}?t={os.environ['SLACK_BOT_TOKEN']}"
+    token = os.environ['SLACK_BOT_TOKEN'].replace("-", r"%2D")
+    link = f"{link}?t={token}"
     print(link)
     options = Options()
     options.headless = True
     driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
     driver.get(link)
     pageSource = driver.page_source
+    driver.quit()
     return pageSource
 
 def slack_file_id_to_transcript(file_id: str) -> str:
