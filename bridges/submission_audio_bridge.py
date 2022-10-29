@@ -56,7 +56,7 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
-    link = f"{link}&t={os.environ['SLACK_SIGNING_SECRET']}"
+    link = f"{link}&t={os.environ['SLACK_BOT_TOKEN']}"
     options = Options()
     options.headless = True
     driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
