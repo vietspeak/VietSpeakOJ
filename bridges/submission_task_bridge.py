@@ -10,11 +10,18 @@ from slack_bolt import App
 def send_feedback_message(
     app: App, session: Session, task: Task, word_errors: List[WordError], submission: Submission
 ):
-    result = f"Mình xin phép được nhận xét bài {str(task.level).split('.')[-1]} Task {task.task_number} của bạn\n"
+    user_find_stmt = select(User).where(User.id == submission.user_id)
+    user: User = next(session.scalars(user_find_stmt), None)
+    slack_id = user.slack_id
+    if not slack_id:
+        return
+    
+    level_name = str(task.level).split('.')[-1].lower()
+    result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
 
     error_msg = " | ".join(
-        f"{error.right_word} -> `{error.wrong_word if error.wrong_word else '∅'}`"
+        f"{error.right_word.lower()} -> `{error.wrong_word.lower() if error.wrong_word else '∅'}`"
         for error in word_errors
     )
 
@@ -25,9 +32,7 @@ def send_feedback_message(
     result += submission.transcript.lower() + "\n"
     result += "Điểm: {:0.2f}".format(submission.score * 100)
 
-    user_find_stmt = select(User).where(User.id == submission.user_id)
-    user: User = next(session.scalars(user_find_stmt), None)
-    slack_id = user.slack_id
+    
     app.client.chat_postMessage(channel=slack_id, text=result)
 
 
