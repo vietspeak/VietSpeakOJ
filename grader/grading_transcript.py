@@ -101,7 +101,7 @@ class LegacyGrader:
                 else:
                     most_common_match = Counter(matches_word).most_common(1)[0][0]
                     right_word = student_ranges[most_common_match][0]
-                    if r[0] != right_word:
+                    if grading_arpabet[id] != student_arpabet[most_common_match]:
                         errors.append((r[0], right_word))
 
         return Feedback(score=score, errors=errors)
