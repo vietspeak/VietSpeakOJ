@@ -36,9 +36,14 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
             Submission.audio_file == bytes(file_id, encoding="utf-8")
         )
 
-        cache_submission = next(session.scalars(find_cache_submission), None)
+        cache_submission: Submission = next(session.scalars(find_cache_submission), None)
 
+        file_info = app.client.files_info(file=file_id)
+        is_official = is_official_check(file_info.get("file", {}).get("shares", {}))
+        
         if cache_submission:
+            cache_submission.is_official = is_official
+            session.commit()
             send_cache_feedback(session, cache_submission)
             return
 
@@ -49,12 +54,10 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
             say("Bot chưa biết bạn là ai. Hãy đợi bot 1 phút để tìm hiểu bạn.")
             return
 
-        file_info = app.client.files_info(file=event.get("file_id"))
-
         new_submission = Submission(
             source=FileSource.SLACK,
             user_id=user.id,
-            is_official=is_official_check(file_info.get("file", {}).get("shares", {})),
+            is_official=is_official,
             audio_file=bytes(event.get("file_id"), encoding="utf-8"),
         )
         session.add(new_submission)
