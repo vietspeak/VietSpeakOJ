@@ -44,7 +44,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
         if cache_submission:
             cache_submission.is_official = is_official
             session.commit()
-            send_cache_feedback(session, cache_submission)
+            send_cache_feedback(app, session, cache_submission)
             return
 
         find_real_user_id = select(User).where(User.slack_id == event.get("user_id"))
