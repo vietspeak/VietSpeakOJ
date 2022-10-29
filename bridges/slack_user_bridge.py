@@ -3,17 +3,20 @@ import random
 import string
 import time
 from typing import List
+
+from slack_sdk.errors import SlackApiError
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from model.model import User
 from slack.app import app
-from slack_sdk.errors import SlackApiError
-from sqlalchemy.orm import Session
-from sqlalchemy import select
-
 
 logger = logging.getLogger(__name__)
 
+
 def generate_password(length: int = 10) -> str:
-    return ''.join(random.choice(string.ascii_letters) for _ in range(length))
+    return "".join(random.choice(string.ascii_letters) for _ in range(length))
+
 
 def entry_point(session: Session = None):
     all_users = []
@@ -31,7 +34,6 @@ def entry_point(session: Session = None):
     except SlackApiError as e:
         logger.error("Error creating conversation: {}".format(e))
 
-
     new_users: List[User] = []
     for user in all_users:
         print(user)
@@ -48,15 +50,16 @@ def entry_point(session: Session = None):
             user_obj.is_owner = is_owner
             user_obj.is_admin = is_admin
         else:
-            user_obj = User(slack_id=user["id"],
-            email=user_email,
-            password=generate_password(),
-            first_seen_timestamp=time.time_ns(),
-            is_bot=is_bot,
-            is_owner=is_owner,
-            is_admin=is_admin)
+            user_obj = User(
+                slack_id=user["id"],
+                email=user_email,
+                password=generate_password(),
+                first_seen_timestamp=time.time_ns(),
+                is_bot=is_bot,
+                is_owner=is_owner,
+                is_admin=is_admin,
+            )
             new_users.append(user_obj)
-    
 
     session.add_all(new_users)
     session.commit()
