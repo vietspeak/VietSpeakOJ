@@ -11,10 +11,7 @@ from vosk import KaldiRecognizer, Model
 
 from model.model import FileSource, Submission
 from slack.app import app
-from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.firefox.options import Options
+import bs4
 
 
 SAMPLE_RATE = 16000
@@ -57,17 +54,8 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 def vtt_link_to_transcript(link: str) -> str:
     r = requests.get(link, headers={'Authorization': "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])})
-    print(r.content)
-    token = os.environ['SLACK_BOT_TOKEN'].replace("-", r"%2D")
-    link = f"{link}?t={token}"
-    print(link)
-    options = Options()
-    options.headless = True
-    driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()), options=options)
-    driver.get(link)
-    pageSource = driver.page_source
-    driver.quit()
-    return pageSource
+    content = " ".join(x[2:] for x in r.content.decode().split("\n")[3::3])
+    return content
 
 def slack_file_id_to_transcript(file_id: str) -> str:
     file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
