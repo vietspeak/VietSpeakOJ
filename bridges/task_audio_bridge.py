@@ -7,15 +7,13 @@ from model.model import Task, engine
 
 
 def entry_point(session: Session, grading_transcript: GradingTranscript):
-    task: Task = None
-    with Session(engine) as session:
-        stmt = select(Task).where(Task.audio_file != None)
-        task = next(session.scalars(stmt), None)
+    stmt = select(Task).where(Task.audio_file != None)
+    task = next(session.scalars(stmt), None)
 
-        if task:
-            transcript = bytes_to_transcript(task.audio_file)
-            task.grading_transcript = grading_transcript.get_grading_transcript(
-                task.sample_transcript, transcript
-            )
-            task.audio_file = None
-            session.commit()
+    if task:
+        transcript = bytes_to_transcript(task.audio_file)
+        task.grading_transcript = grading_transcript.get_grading_transcript(
+            task.sample_transcript, transcript
+        )
+        task.audio_file = None
+        session.commit()

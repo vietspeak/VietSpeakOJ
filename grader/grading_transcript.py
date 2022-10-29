@@ -68,13 +68,10 @@ class LegacyGrader:
         
         return result, word_ranges
 
-    def grader(self, student_script: str, grading_script: str) -> float:
+    def grader(self, student_script: str, grading_script: str) -> Feedback:
         student_arpabet, student_ranges = self._get_chosen_arpabet_script(student_script)
         grading_arpabet, grading_ranges = self._get_chosen_arpabet_script(grading_script)
         common = LongestCommonSubsequence.solve(student_arpabet, grading_arpabet)
-        print(student_arpabet)
-        print(grading_arpabet)
-        print(common)
 
 
         score = len(common) / max(1, len(grading_arpabet))
@@ -103,8 +100,9 @@ class LegacyGrader:
                     errors.append((r[0], None))
                 else:
                     most_common_match = Counter(matches_word).most_common(1)[0][0]
-                    errors.append((r[0], student_ranges[most_common_match][0]))
-        
+                    right_word = student_ranges[most_common_match][0]
+                    if r[0] != right_word:
+                        errors.append((r[0], right_word))
 
         return Feedback(score=score, errors=errors)
 
