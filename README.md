@@ -5,10 +5,12 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 python3 -m venv env
 source env/bin/activate
-pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp
+pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp selenium webdriver-manager
 sudo apt-get install ffmpeg unzip
 mkdir database
 mkdir tmp
+mkdir firefox_drivers
+tar -xzf geckodriver-v0.32.0-linux64.tar.gz -C firefox_drivers
 python3 installer.py
 ```
 
