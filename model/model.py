@@ -55,6 +55,14 @@ class User(Base):
     email = Column(String)
     password = Column(String)
 
+class WordError(Base):
+    __tablename__ = "word_errors"
+
+    id = Column(Integer, primary_key=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id"))
+    wrong_word = Column(String)
+    right_word = Column(String, nullable=True)
+
 
 class Submission(Base):
     __tablename__ = "submissions"

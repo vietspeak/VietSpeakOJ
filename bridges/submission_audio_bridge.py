@@ -14,11 +14,14 @@ rec = KaldiRecognizer(model, SAMPLE_RATE)
 
 
 def bytes_to_transcript(file_content: bytes) -> str:
+    with open("./tmp/input.inp", "wb") as f:
+        f.write(file_content)
+    
     process = Popen(
         [
             "ffmpeg",
             "-i",
-            "pipe:",
+            "./tmp/input.inp",
             "-ar",
             str(SAMPLE_RATE),
             "-ac",
@@ -27,10 +30,9 @@ def bytes_to_transcript(file_content: bytes) -> str:
             "s16le",
             "-",
         ],
-        stdin=PIPE,
         stdout=PIPE,
     )
-    data = process.communicate(input=file_content)[0]
+    data = process.communicate()[0]
     ret = ""
     if len(data) == 0:
         return ret
@@ -39,11 +41,11 @@ def bytes_to_transcript(file_content: bytes) -> str:
         ret += json.loads(res)["text"] + " "
 
     ret += json.loads(rec.FinalResult())["text"]
+    print(ret)
     return ret
 
 
 def entry_point(session: Session):
-    audio_file = None
     stmt = select(Submission).where(Submission.audio_file != None)
     audio_file: Submission = next(session.scalars(stmt), None)
 
