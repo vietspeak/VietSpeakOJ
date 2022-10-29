@@ -56,6 +56,8 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
+    r = requests.get(link, headers={'Authorization': "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])})
+    print(r.content)
     token = os.environ['SLACK_BOT_TOKEN'].replace("-", r"%2D")
     link = f"{link}?t={token}"
     print(link)
