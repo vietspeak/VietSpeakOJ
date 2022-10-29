@@ -18,7 +18,7 @@ app = App(
 
 @app.event("file_shared")
 def file_shared_handler(client: WebClient, event: Optional[Dict[str, Any]]):
-    
+
     with Session(engine) as session:
         new_submission = Submission(
             source=FileSource.SLACK,
@@ -42,4 +42,4 @@ def slack_events():
 
 # Start your app
 if __name__ == "__main__":
-    flask_app.run(port=int(os.environ.get("PORT", 3000)))
+    flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 3000)))
