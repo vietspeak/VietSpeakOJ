@@ -25,4 +25,4 @@ while True:
         submission_audio_bridge.entry_point(session)
         submission_transcript_bridge.entry_point(session, task_determiner)
         submission_task_bridge.entry_point(app, session, grader)
-        time.sleep(5)
+        time.sleep(15)
