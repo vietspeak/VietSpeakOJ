@@ -1,5 +1,6 @@
 import os
 from typing import Any, Dict, Optional
+import logging
 
 # Use the package we installed
 from slack_bolt import App
@@ -17,8 +18,9 @@ app = App(
 
 
 @app.event("file_shared")
-def file_shared_handler(client: WebClient, event: Optional[Dict[str, Any]]):
-
+def file_shared_handler(event: Optional[Dict[str, Any]]):
+    logging.info("I'm here")
+    
     with Session(engine) as session:
         new_submission = Submission(
             source=FileSource.SLACK,
