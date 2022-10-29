@@ -10,7 +10,7 @@ from slack_bolt import App
 def send_feedback_message(
     app: App, session: Session, task: Task, word_errors: List[WordError], submission: Submission
 ):
-    result = f"Mình xin phép được nhận xét bài {task.level} Task {task.task_number} của bạn\n"
+    result = f"Mình xin phép được nhận xét bài {str(task.level).split('.')[-1]} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
 
     error_msg = " | ".join(
