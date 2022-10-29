@@ -79,4 +79,4 @@ def entry_point(app: App, session: Session, grader: LegacyGrader):
 
         session.commit()
 
-        send_feedback_message(app, task, word_error_objs, submission)
+        send_feedback_message(app, session, task, word_error_objs, submission)
