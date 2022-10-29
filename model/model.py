@@ -1,3 +1,4 @@
+from email.policy import default
 import enum
 import json
 from typing import Any, List
@@ -7,10 +8,7 @@ from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float, ForeignKe
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
-with open("./config/config.json", "r") as f:
-    configs = json.load(f)
-
-PATH_TO_DATABASE = configs["PATH_TO_DATABASE"]
+from config.config import PATH_TO_DATABASE
 
 engine = create_engine(f"sqlite:///{PATH_TO_DATABASE}", echo=True, future=True)
 Base = declarative_base()
@@ -57,8 +55,8 @@ class User(Base):
     is_bot = Column(Boolean)
     is_owner = Column(Boolean)
     is_admin = Column(Boolean)
-    first_seen_timestamp = Column(Integer)
-    last_official_submission_timestamp = Column(Integer)
+    created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
+    last_official_submission_timestamp = Column(TIMESTAMP)
 
 class WordError(Base):
     __tablename__ = "word_errors"
@@ -75,10 +73,12 @@ class Submission(Base):
     id = Column(Integer, primary_key=True)
     source = Column(Enum(FileSource))
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_official = Column(Boolean, default=False)
     audio_file = Column(BLOB)
     transcript = Column(String)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=True)
     score = Column(Float)
+    created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
     def __repr__(self):
         attrs = ["id", "source", "audio_file", "transcript"]

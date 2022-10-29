@@ -54,7 +54,6 @@ def entry_point(session: Session = None):
                 slack_id=user["id"],
                 email=user_email,
                 password=generate_password(),
-                first_seen_timestamp=time.time_ns(),
                 is_bot=is_bot,
                 is_owner=is_owner,
                 is_admin=is_admin,
