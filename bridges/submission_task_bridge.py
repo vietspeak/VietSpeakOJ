@@ -18,7 +18,7 @@ def send_feedback_message(
         for error in word_errors
     )
 
-    result += f"*{error_msg}*"
+    result += f"*{error_msg}*\n"
 
     result += f"Đây là những gì mình nghe được từ bạn:\n"
 
