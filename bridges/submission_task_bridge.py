@@ -71,7 +71,7 @@ def entry_point(app: App, session: Session, grader: LegacyGrader):
 
         for error in feedback.errors:
             word_error = WordError(
-                submission_id=submission.id, wrong_word=error[0], right_word=error[1]
+                submission_id=submission.id, right_word=error[0], wrong_word=error[1]
             )
             word_error_objs.append(word_error)
 
