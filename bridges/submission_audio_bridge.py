@@ -55,7 +55,7 @@ def vtt_link_to_transcript(link: str) -> str:
 
 
 def slack_file_id_to_transcript(file_id: str) -> str:
-    file_info: Dict[str, Any] = app.client.files_info(file_id).get("file", {})
+    file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
 
     url = file_info.get("url_private_download")
 
