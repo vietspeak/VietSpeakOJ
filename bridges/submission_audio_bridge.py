@@ -53,9 +53,13 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
-    r = requests.get(link, headers={'Authorization': "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])})
+    r = requests.get(
+        link,
+        headers={"Authorization": "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])},
+    )
     content = " ".join(x[2:] for x in r.content.decode().split("\n")[3::3])
     return content
+
 
 def slack_file_id_to_transcript(file_id: str) -> str:
     file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
@@ -64,30 +68,35 @@ def slack_file_id_to_transcript(file_id: str) -> str:
 
     if not url:
         return ""
-    
+
     vtt_link = file_info.get("vtt")
-    
+
     if not vtt_link and file_info.get("transcription"):
         time.sleep(file_info.get("duration_ms", 60000) / 1000)
         file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
         vtt_link = file_info.get("vtt")
-    
+
     if vtt_link:
         return vtt_link_to_transcript(vtt_link)
 
-    r = requests.get(url, headers={'Authorization': "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])})
+    r = requests.get(
+        url,
+        headers={"Authorization": "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])},
+    )
     return bytes_to_transcript(r.content)
 
 
 def entry_point(session: Session):
-    stmt = select(Submission).where(Submission.audio_file != None)
+    stmt = select(Submission).where(Submission.transcript == None)
     audio_file: Submission = next(session.scalars(stmt), None)
 
     if audio_file:
         if audio_file.source == FileSource.WEBSITE:
             audio_file.transcript = bytes_to_transcript(audio_file.audio_file)
+            audio_file.audio_file = None
         else:
-            audio_file.transcript = slack_file_id_to_transcript(audio_file.audio_file.decode())
-            
-        audio_file.audio_file = None
+            audio_file.transcript = slack_file_id_to_transcript(
+                audio_file.audio_file.decode()
+            )
+
         session.commit()

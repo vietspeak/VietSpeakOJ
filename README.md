@@ -34,3 +34,7 @@ coverage run -m pytest tests && coverage report --show-missing
 sudo ufw allow $PORT
 gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
 ```
+## Load remote database
+```
+scp $REMOTE_SERVER:~/VietSpeakOJ/database/db.sqlite ./database/db.sqlite
+```

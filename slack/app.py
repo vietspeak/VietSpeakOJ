@@ -1,14 +1,16 @@
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 import logging
 
 # Use the package we installed
-from slack_bolt import App
+from slack_bolt import App, Say
 from slack_bolt.adapter.flask import SlackRequestHandler
+from bridges.submission_task_bridge import send_cache_feedback
 from config.config import MANDATORY_CHANNEL
-from model.model import FileSource, Submission, engine
+from model.model import FileSource, Submission, User, engine
 from slack_sdk.web.client import WebClient
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -17,13 +19,45 @@ app = App(
 )
 
 
+def is_official_check(dictionary: Dict[str, Any]):
+    for share_key in dictionary:
+        public_list: List[str] = dictionary[share_key].keys()
+        if os.environ["AUDIO_POSTED_CHANNEL"] in public_list:
+            return True
+
+    return False
+
+
 @app.event("file_shared")
-def file_shared_handler(event: Optional[Dict[str, Any]]):
-    
+def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     with Session(engine) as session:
+        file_id = event.get("file_id")
+        find_cache_submission = select(Submission).where(
+            Submission.audio_file == bytes(file_id, encoding="utf-8")
+        )
+
+        cache_submission: Submission = next(session.scalars(find_cache_submission), None)
+
+        file_info = app.client.files_info(file=file_id)
+        is_official = is_official_check(file_info.get("file", {}).get("shares", {}))
+        
+        if cache_submission:
+            cache_submission.is_official = is_official
+            session.commit()
+            send_cache_feedback(session, cache_submission)
+            return
+
+        find_real_user_id = select(User).where(User.slack_id == event.get("user_id"))
+        user: User = next(session.scalars(find_real_user_id), None)
+
+        if not user:
+            say("Bot chưa biết bạn là ai. Hãy đợi bot 1 phút để tìm hiểu bạn.")
+            return
+
         new_submission = Submission(
             source=FileSource.SLACK,
-            user_id=event.get("user_id"),
+            user_id=user.id,
+            is_official=is_official,
             audio_file=bytes(event.get("file_id"), encoding="utf-8"),
         )
         session.add(new_submission)
@@ -43,4 +77,4 @@ def slack_events():
 
 # Start your app
 if __name__ == "__main__":
-    flask_app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 3000)))
+    flask_app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
