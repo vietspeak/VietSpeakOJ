@@ -20,10 +20,11 @@ def send_feedback_message(
     result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
 
-    error_msg = " | ".join(
-        f"{error.right_word.lower()} -> `{error.wrong_word.lower() if error.wrong_word else '∅'}`"
-        for error in word_errors
-    )
+    if len(word_errors):
+        error_msg = " | ".join(
+            f"{error.right_word.lower()} -> `{error.wrong_word.lower() if error.wrong_word else '∅'}`"
+            for error in word_errors
+        )
 
     result += f"*{error_msg}*\n"
 
