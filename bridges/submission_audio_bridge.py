@@ -16,7 +16,7 @@ rec = KaldiRecognizer(model, SAMPLE_RATE)
 def bytes_to_transcript(file_content: bytes) -> str:
     with open("./tmp/input.inp", "wb") as f:
         f.write(file_content)
-    
+
     process = Popen(
         [
             "ffmpeg",

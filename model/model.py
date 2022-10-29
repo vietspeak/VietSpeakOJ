@@ -54,6 +54,11 @@ class User(Base):
     slack_id = Column(String)
     email = Column(String)
     password = Column(String)
+    is_bot = Column(Boolean)
+    is_owner = Column(Boolean)
+    is_admin = Column(Boolean)
+    first_seen_timestamp = Column(Integer)
+    last_official_submission_timestamp = Column(Integer)
 
 class WordError(Base):
     __tablename__ = "word_errors"
