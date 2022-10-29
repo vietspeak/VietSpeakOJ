@@ -1,11 +1,17 @@
 import json
+import time
+import requests
+import os
 from subprocess import PIPE, Popen
+from typing import Any, Dict
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from vosk import KaldiRecognizer, Model
 
 from model.model import FileSource, Submission
+from slack.app import app
+
 
 SAMPLE_RATE = 16000
 
@@ -41,8 +47,35 @@ def bytes_to_transcript(file_content: bytes) -> str:
         ret += json.loads(res)["text"] + " "
 
     ret += json.loads(rec.FinalResult())["text"]
-    print(ret)
+
     return ret
+
+def vtt_link_to_transcript(link: str) -> str:
+    return ""
+
+
+def slack_file_id_to_transcript(file_id: str) -> str:
+    file_info: Dict[str, Any] = app.client.files_info(file_id).get("file", {})
+
+    url = file_info.get("url_private_download")
+
+    if not url:
+        return ""
+    
+    vtt_link = file_info.get("vtt")
+    
+    if not vtt_link and file_info.get("transcription"):
+        time.sleep(file_info.get("duration_ms", 60000) / 1000)
+        vtt_link = file_info.get("vtt")
+    
+    print(vtt_link)
+    vtt_link = None
+    
+    if vtt_link:
+        return vtt_link_to_transcript(vtt_link)
+
+    r = requests.get(url, headers={'Authorization': "Bearer {}".format(os.environ["SLACK_BOT_TOKEN"])})
+    return bytes_to_transcript(r.content)
 
 
 def entry_point(session: Session):
@@ -53,6 +86,7 @@ def entry_point(session: Session):
         if audio_file.source == FileSource.WEBSITE:
             audio_file.transcript = bytes_to_transcript(audio_file.audio_file)
         else:
-            audio_file.transcript = ""
+            audio_file.transcript = slack_file_id_to_transcript(audio_file.audio_file.decode())
+            
         audio_file.audio_file = None
         session.commit()
