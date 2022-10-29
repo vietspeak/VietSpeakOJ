@@ -20,6 +20,7 @@ app = App(
 @app.event("file_shared")
 def file_shared_handler(event: Optional[Dict[str, Any]]):
     logging.info("I'm here")
+    return
     
     with Session(engine) as session:
         new_submission = Submission(
