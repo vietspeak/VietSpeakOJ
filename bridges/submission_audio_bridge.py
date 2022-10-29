@@ -56,7 +56,7 @@ def bytes_to_transcript(file_content: bytes) -> str:
 
 
 def vtt_link_to_transcript(link: str) -> str:
-    link = f"{link}&t={os.environ['SLACK_BOT_TOKEN']}"
+    link = f"{link}?t={os.environ['SLACK_BOT_TOKEN']}"
     print(link)
     options = Options()
     options.headless = True
