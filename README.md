@@ -8,6 +8,7 @@ source env/bin/activate
 pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp
 sudo apt-get install ffmpeg unzip
 mkdir database
+mkdir tmp
 python3 installer.py
 ```
 
