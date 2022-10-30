@@ -27,6 +27,7 @@ def test_scenario_1(grader: LegacyGrader):
     )
     assert ("ENCOURAGE", "ENCOURAGED") in grading_result.errors
     assert ("PERFECTION", "FICTION") in grading_result.errors
+    assert grading_result.score <= 1
 
 
 def test_scenario_2(grader: LegacyGrader):
@@ -66,3 +67,4 @@ including a sizeable number of women and villagers whom they had trained.
     grading_result = grader.grader(student_text, grader_text)
     for pair in grading_result.errors:
         assert pair[1] != "TRAINED"
+    assert grading_result.score <= 1
