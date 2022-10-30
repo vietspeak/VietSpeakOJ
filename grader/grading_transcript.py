@@ -4,7 +4,10 @@ from typing import Dict, List, Tuple
 from model.model import CMUPronunciation
 from utils.dictionary import Dictionary
 from utils.lcs import LongestCommonSubsequence
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
 from collections import Counter
+import numpy as np
 
 class GradingTranscript:
     def __init__(self, dictionary: Dictionary):
@@ -53,9 +56,8 @@ class LegacyGrader:
                 chosen = pronounce
         return chosen
 
-    def _get_chosen_arpabet_script(self, script: str) -> List[str]:
+    def _get_chosen_arpabet_script(self, script: str) -> Tuple[List[str], List[Tuple[str, Tuple[int, int]]]]:
         pronunciations = self.dictionary.get_pronunciation_from_text(script)
-        arpabets: List[str] = []
         word_ranges: List[Tuple[str, Tuple[int, int]]] = []
         result = []
         ptr = 0
@@ -86,24 +88,61 @@ class LegacyGrader:
             grading_map[pair[1]] = pair[0]
 
         
-        errors = []
+        errors: List[List[int]] = []
+        current_min_indexed: List[int] = []
+        minimum_index = 0
         for id, r in enumerate(grading_ranges):
-            mistake = False
-            for x in range(*r[1]):
-                if x not in grading_map:
-                    mistake = True
-                    break
-            
-            if mistake:
-                matches_word = [position_to_student_word_indexes[grading_map[x]] for x in range(*r[1]) if x in grading_map]
-                if not matches_word:
-                    errors.append((r[0], None))
-                else:
-                    most_common_match = Counter(matches_word).most_common(1)[0][0]
-                    right_word = student_ranges[most_common_match][0]
-                    if grading_arpabet[id] != student_arpabet[most_common_match]:
-                        errors.append((r[0], right_word))
+            matches_word = [position_to_student_word_indexes[grading_map[x]] for x in range(*r[1]) if x in grading_map]
+            mistake = len(matches_word) < r[1][1] - r[1][0]
 
-        return Feedback(score=score, errors=errors)
+            if not mistake:
+                minimum_index = max(minimum_index, max(matches_word))
+                continue
+            
+            if not matches_word:
+                current_min_indexed.append(minimum_index)
+                errors.append([id, None])
+                continue
+            
+            most_common_match = Counter(matches_word).most_common(1)[0][0]
+            if most_common_match < minimum_index:
+                current_min_indexed.append(minimum_index)
+                errors.append([id, None])
+                continue
+            
+            minimum_index = most_common_match + 1
+
+            if grading_arpabet[id] != student_arpabet[most_common_match]:
+                current_min_indexed.append(minimum_index)
+                errors.append([id, most_common_match])
+
+
+        if errors:
+            vectorizer = TfidfVectorizer()
+            corpus: List[str] = []
+            corpus_indexes = []
+            for id, r in enumerate(student_ranges):
+                if r[1][1] - r[1][0] > 3:
+                    corpus.append(" ".join(student_arpabet[r[1][0]:r[1][1]]))
+                    corpus_indexes.append(id)
+            
+            arpabet_matrix = vectorizer.fit_transform(corpus)
+
+            for i in range(len(errors)):
+                if current_min_indexed[i] >= len(student_arpabet):
+                    break
+                if errors[i][1] is not None:
+                    continue
+
+                grading_index = errors[i][0]
+                grading_vector = vectorizer.transform([" ".join(grading_arpabet[grading_index])])
+                similarities: np.ndarray = linear_kernel(grading_vector, arpabet_matrix).flatten()
+                
+                for matching_id in similarities.argsort()[-10:]:
+                    if corpus_indexes[matching_id] >= current_min_indexed[i]:
+                        errors[i][1] = corpus_indexes[matching_id]
+        
+        word_errors: List[Tuple[str, str]] = [(grading_ranges[x][0], student_ranges[y][0]) for x, y in errors]
+        return Feedback(score=score, errors=word_errors)
 
             
