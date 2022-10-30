@@ -91,12 +91,15 @@ class LegacyGrader:
         errors: List[List[int]] = []
         current_min_indexed: List[int] = []
         minimum_index = 0
+        student_rights = set()
         for id, r in enumerate(grading_ranges):
             matches_word = [position_to_student_word_indexes[grading_map[x]] for x in range(*r[1]) if x in grading_map]
             mistake = len(matches_word) < r[1][1] - r[1][0]
 
             if not mistake:
                 minimum_index = max(minimum_index, max(matches_word))
+                for m in matches_word:
+                    student_rights.add(m)
                 continue
             
             if not matches_word:
@@ -122,7 +125,7 @@ class LegacyGrader:
             corpus: List[str] = []
             corpus_indexes = []
             for id, r in enumerate(student_ranges):
-                if r[1][1] - r[1][0] > 3:
+                if id not in student_rights and r[1][1] - r[1][0] > 3:
                     corpus.append(" ".join(student_arpabet[r[1][0]:r[1][1]]))
                     corpus_indexes.append(id)
             
