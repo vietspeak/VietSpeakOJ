@@ -27,6 +27,19 @@ def is_official_check(dictionary: Dict[str, Any]):
 
     return False
 
+@app.event("team_join")
+def add_new_member_to_db(event: Optional[Dict[str, Any]], say: Say):
+    user: Dict[str, Any] = event.get("user")
+    with Session(engine) as session:
+        find_user_stmt = select(User).where(User.slack_id == user["id"])
+        user_obj: User = next(session.scalars(find_user_stmt), None)
+
+        if user_obj:
+            user_obj.update_from_dict(user)
+        else:
+            user_obj = User.from_dict(user)
+            session.add(user_obj)
+        session.commit()
 
 @app.event("file_shared")
 def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):

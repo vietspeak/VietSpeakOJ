@@ -42,7 +42,10 @@ class Dictionary:
         else:
             stmt = select(CMUPronunciation).where(CMUPronunciation.word == word)
 
-        return list(self.session.scalars(stmt))
+        result: List[CMUPronunciation] = list(self.session.scalars(stmt))
+        result.sort(key=lambda x: x.ipa.count("ə"), reverse=True)
+        return result
+
 
     def get_pronunciation_from_text(
         self, text: str, for_grader: bool = False

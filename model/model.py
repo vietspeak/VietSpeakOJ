@@ -1,10 +1,21 @@
 from email.policy import default
 import enum
-import json
-from typing import Any, List
+import random
+import string
+from typing import Any, Dict, List
 
-from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float, ForeignKey,
-                        Integer, String, create_engine)
+from sqlalchemy import (
+    BLOB,
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    create_engine,
+)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
@@ -22,11 +33,11 @@ def generate_repr(obj: Any, class_name: str, attrs: List[str]) -> str:
 class CMUPronunciation(Base):
     __tablename__ = "cmu_pronunciations"
 
-    id = Column(Integer, primary_key=True)
-    word = Column(String)
-    arpabet = Column(String)
-    ipa = Column(String)
-    use_in_grader = Column(Boolean)
+    id: int = Column(Integer, primary_key=True)
+    word: str = Column(String)
+    arpabet: str = Column(String)
+    ipa: str = Column(String)
+    use_in_grader: bool = Column(Boolean)
 
     def __repr__(self):
         return generate_repr(
@@ -45,6 +56,7 @@ class TaskLevel(enum.Enum):
     BLUE = 2
     RED = 3
 
+
 class User(Base):
     __tablename__ = "users"
 
@@ -57,6 +69,34 @@ class User(Base):
     is_admin = Column(Boolean)
     created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
     last_official_submission_timestamp = Column(TIMESTAMP)
+
+    @classmethod
+    def generate_password(length: int = 10) -> str:
+        return "".join(random.choice(string.ascii_letters) for _ in range(length))
+
+    @classmethod
+    def from_dict(cls, user: Dict[str, Any]) -> "User":
+        user_id = user.get("id")
+        user_email = user["profile"].get("email")
+        is_bot = user.get("is_bot", False)
+        is_owner = user.get("is_owner", False)
+        is_admin = user.get("is_admin", False)
+
+        return User(
+            slack_id=user_id,
+            user_email=user_email,
+            password=cls.generate_password(),
+            is_bot=is_bot,
+            is_owner=is_owner,
+            is_admin=is_admin,
+        )
+
+    def update_from_dict(self, user: Dict[str, Any]):
+        self.user_email = user["profile"].get("email")
+        self.is_bot = user.get("is_bot", False)
+        self.is_owner = user.get("is_owner", False)
+        self.is_admin = user.get("is_admin", False)
+
 
 class WordError(Base):
     __tablename__ = "word_errors"
@@ -97,7 +137,15 @@ class Task(Base):
     grading_transcript = Column(String)
 
     def __repr__(self):
-        attrs = ["id", "task_number", "level", "title", "audio_file", "sample_transcript", "grading_transcript"]
+        attrs = [
+            "id",
+            "task_number",
+            "level",
+            "title",
+            "audio_file",
+            "sample_transcript",
+            "grading_transcript",
+        ]
         return generate_repr(self, "Task", attrs)
 
 
