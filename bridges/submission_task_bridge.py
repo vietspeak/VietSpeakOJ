@@ -7,16 +7,21 @@ from grader.grading_transcript import LegacyGrader
 from model.model import Submission, Task, User, WordError
 from slack_bolt import App
 
+
 def send_feedback_message(
-    app: App, session: Session, task: Task, word_errors: List[WordError], submission: Submission
+    app: App,
+    session: Session,
+    task: Task,
+    word_errors: List[WordError],
+    submission: Submission,
 ):
     user_find_stmt = select(User).where(User.id == submission.user_id)
     user: User = next(session.scalars(user_find_stmt), None)
     slack_id = user.slack_id
     if not slack_id:
         return
-    
-    level_name = str(task.level).split('.')[-1]
+
+    level_name = str(task.level).split(".")[-1]
     level_name = level_name[0] + level_name[1:].lower()
     result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n"
     result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n"
@@ -34,7 +39,6 @@ def send_feedback_message(
     result += submission.transcript.lower() + "\n"
     result += "Điểm: {:0.2f}".format(submission.score * 100)
 
-    
     app.client.chat_postMessage(channel=slack_id, text=result)
 
 

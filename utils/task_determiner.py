@@ -26,7 +26,7 @@ class TaskDeterminer:
 
         if not new_tasks:
             return
-        
+
         for task in new_tasks:
             self.task_ids.append(task.id)
             self.corpus.append(task.grading_transcript)

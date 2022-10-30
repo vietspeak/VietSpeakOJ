@@ -4,7 +4,8 @@ from typing import Hashable, List, Tuple
 import sys
 
 MAX_N = 1000
-sys.setrecursionlimit(10 ** 6)
+sys.setrecursionlimit(10**6)
+
 
 @dataclass
 class LCSResult:
@@ -42,7 +43,7 @@ class LongestCommonSubsequence:
                 tmp = trace_reverse(x + 1, y + 1)
                 tmp.append((x, y))
                 return tmp
-            
+
             if result == dp(x + 1, y):
                 return trace_reverse(x + 1, y)
 

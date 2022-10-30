@@ -142,7 +142,13 @@ class LegacyGrader:
                     if corpus_indexes[matching_id] >= current_min_indexed[i]:
                         errors[i][1] = corpus_indexes[matching_id]
         
-        word_errors: List[Tuple[str, str]] = [(grading_ranges[x][0], student_ranges[y][0]) for x, y in errors]
+        word_errors: List[Tuple[str, str]] = []
+        for x, y in errors:
+            if y:
+                word_errors.append((grading_ranges[x][0], student_ranges[y][0]))
+            else:
+                word_errors.append((grading_ranges[x][0], None))
+
         return Feedback(score=score, errors=word_errors)
 
             
