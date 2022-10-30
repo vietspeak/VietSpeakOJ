@@ -1,13 +1,16 @@
+from asyncio import current_task
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 
 from model.model import CMUPronunciation
 from utils.dictionary import Dictionary
-from utils.lcs import LongestCommonSubsequence
+from utils.lcs import LCSResult, LongestCommonSubsequence
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 from collections import Counter
 import numpy as np
+import statistics
+
 
 class GradingTranscript:
     def __init__(self, dictionary: Dictionary):
@@ -39,119 +42,121 @@ class Feedback:
     score: float
     errors: List[Tuple[str, str]]
 
+
 class LegacyGrader:
     def __init__(self, dictionary: Dictionary):
         self.dictionary = dictionary
 
     @classmethod
-    def _get_chosen_arpabet(
-        cls, pronunciations: List[CMUPronunciation]
-    ) -> CMUPronunciation:
-        max_schwa = 0
-        chosen = None
-        for pronounce in pronunciations:
-            number_of_schwa = pronounce.arpabet.count("AH")
-            if chosen is None or number_of_schwa > max_schwa:
-                max_schwa = number_of_schwa
-                chosen = pronounce
-        return chosen
-
-    def _get_chosen_arpabet_script(self, script: str) -> Tuple[List[str], List[Tuple[str, Tuple[int, int]]]]:
-        pronunciations = self.dictionary.get_pronunciation_from_text(script)
-        word_ranges: List[Tuple[str, Tuple[int, int]]] = []
-        result = []
-        ptr = 0
-        for pronounce in pronunciations:
-            cmu_pronunciation = self._get_chosen_arpabet(pronounce)
-            sounds = cmu_pronunciation.arpabet.split()
-            result+=sounds
-            word_ranges.append((cmu_pronunciation.word, (ptr, ptr + len(sounds))))
-            ptr += len(sounds)
-        
-        return result, word_ranges
+    def matchable(cls, a: List[CMUPronunciation], b: List[CMUPronunciation]) -> bool:
+        arpa_1: Set[str] = set(x.arpabet for x in a)
+        arpa_2: Set[str] = set(x.arpabet for x in b)
+        return bool(arpa_1 & arpa_2)
 
     def grader(self, student_script: str, grading_script: str) -> Feedback:
-        student_arpabet, student_ranges = self._get_chosen_arpabet_script(student_script)
-        grading_arpabet, grading_ranges = self._get_chosen_arpabet_script(grading_script)
-        common = LongestCommonSubsequence.solve(student_arpabet, grading_arpabet)
+
+        student_arpabet = self.dictionary.get_pronunciation_from_text(student_script)
+        grading_arpabet = self.dictionary.get_pronunciation_from_text(grading_script)
+
+        grading_lengths = [g[0].arpabet.count(" ") + 1 for g in grading_arpabet]
+        total_grading_length = sum(grading_lengths)
+
+        total_matches_length = 0
+        common = LongestCommonSubsequence.solve(
+            student_arpabet, grading_arpabet, self.matchable
+        )
+        for location in common.locations:
+            total_matches_length += grading_lengths[location[1]]
 
 
-        score = len(common) / max(1, len(grading_arpabet))
+        common.locations = (
+            [(-1, -1)] + common.locations + [(len(student_arpabet), len(grading_arpabet))]
+        )
 
-        position_to_student_word_indexes: List[int] = [None] * len(student_arpabet)
-        for id, r in enumerate(student_ranges):
-            for x in range(*r[1]):
-                position_to_student_word_indexes[x] = id
+        print(common.locations)
 
-        grading_map: Dict[int, int] = {}
-        for pair in common.locations:
-            grading_map[pair[1]] = pair[0]
+        common.locations.sort(key=lambda x: x[0])
 
-        
-        errors: List[List[int]] = []
-        current_min_indexed: List[int] = []
-        minimum_index = 0
-        student_rights = set()
-        for id, r in enumerate(grading_ranges):
-            matches_word = [position_to_student_word_indexes[grading_map[x]] for x in range(*r[1]) if x in grading_map]
-            mistake = len(matches_word) < r[1][1] - r[1][0]
-
-            if not mistake:
-                minimum_index = max(minimum_index, max(matches_word))
-                for m in matches_word:
-                    student_rights.add(m)
+        mismatches_id: List[Tuple[int, int]] = []
+        for i in range(1, len(common.locations)):
+            student_range = (common.locations[i - 1][0] + 1, common.locations[i][0])
+            if student_range[1] <= student_range[0]:
                 continue
-            
-            if not matches_word:
-                current_min_indexed.append(minimum_index)
-                errors.append([id, None])
+
+            grading_range = (common.locations[i - 1][1] + 1, common.locations[i][1])
+
+            if grading_range[1] <= grading_range[0]:
                 continue
-            
-            most_common_match = Counter(matches_word).most_common(1)[0][0]
-            if most_common_match < minimum_index:
-                current_min_indexed.append(minimum_index)
-                errors.append([id, None])
-                continue
-            
-            minimum_index = most_common_match + 1
 
-            if grading_arpabet[id] != student_arpabet[most_common_match]:
-                current_min_indexed.append(minimum_index)
-                errors.append([id, most_common_match])
+            def create_arpabet_and_ranges(
+                sample: List[List[CMUPronunciation]],
+                rg: Tuple[int, int],
+                arpabet: List[str],
+                ranges: List[Tuple[int, int]],
+            ):
+                ptr = 0
+                for id in range(rg[0], rg[1]):
+                    x = sample[id]
+                    current_arpabet = x[0].arpabet.split()
+                    arpabet += current_arpabet
 
+                    current_length = len(current_arpabet)
+                    ranges.append((ptr, ptr + current_length))
+                    ptr += current_length
 
-        if errors:
-            vectorizer = TfidfVectorizer()
-            corpus: List[str] = []
-            corpus_indexes = []
-            for id, r in enumerate(student_ranges):
-                if id not in student_rights and r[1][1] - r[1][0] > 3:
-                    corpus.append(" ".join(student_arpabet[r[1][0]:r[1][1]]))
-                    corpus_indexes.append(id)
-            
-            arpabet_matrix = vectorizer.fit_transform(corpus)
+            student_subset_arpabet: List[str] = []
+            student_subset_ranges: List[Tuple[int, int]] = []
+            create_arpabet_and_ranges(
+                student_arpabet,
+                student_range,
+                student_subset_arpabet,
+                student_subset_ranges,
+            )
+            student_subset_id_to_word_id = {}
+            for i, x in enumerate(student_subset_ranges):
+                for l in range(x[0], x[1]):
+                    student_subset_id_to_word_id[l] = student_range[0] + i
 
-            for i in range(len(errors)):
-                if current_min_indexed[i] >= len(student_arpabet):
-                    break
-                if errors[i][1] is not None:
+            grading_subset_arpabet: List[str] = []
+            grading_subset_ranges: List[Tuple[int, int]] = []
+            create_arpabet_and_ranges(
+                grading_arpabet,
+                grading_range,
+                grading_subset_arpabet,
+                grading_subset_ranges,
+            )
+
+            common_subset: LCSResult = LongestCommonSubsequence.solve(
+                grading_subset_arpabet, student_subset_arpabet
+            )
+            print("grading_subset_arpabet", len(grading_subset_arpabet), grading_range)
+            total_matches_length += len(common_subset)
+
+            grading_to_student_subset_id = dict(common_subset.locations)
+
+            for i in range(grading_range[0], grading_range[1]):
+                real_i = i - grading_range[0]
+                matches_word_id = [
+                    student_subset_id_to_word_id[grading_to_student_subset_id[x]]
+                    for x in range(*grading_subset_ranges[real_i])
+                    if x in grading_to_student_subset_id
+                ]
+
+                if not matches_word_id:
+                    mismatches_id.append((i, None))
                     continue
 
-                grading_index = errors[i][0]
-                grading_vector = vectorizer.transform([" ".join(grading_arpabet[grading_index])])
-                similarities: np.ndarray = linear_kernel(grading_vector, arpabet_matrix).flatten()
-                
-                for matching_id in similarities.argsort()[-10:]:
-                    if corpus_indexes[matching_id] >= current_min_indexed[i]:
-                        errors[i][1] = corpus_indexes[matching_id]
+                best_word = statistics.mode(matches_word_id)
+                mismatches_id.append((i, best_word))
+
+        print(len(grading_arpabet))
+        print(mismatches_id)
         
-        word_errors: List[Tuple[str, str]] = []
-        for x, y in errors:
+        word_errors = []
+        for x, y in mismatches_id:
             if y:
-                word_errors.append((grading_ranges[x][0], student_ranges[y][0]))
+                word_errors.append((grading_arpabet[x][0].word, student_arpabet[y][0].word))
             else:
-                word_errors.append((grading_ranges[x][0], None))
-
-        return Feedback(score=score, errors=word_errors)
-
-            
+                word_errors.append((grading_arpabet[x][0].word, None))
+        
+        return Feedback(score=total_matches_length / total_grading_length, errors=word_errors)

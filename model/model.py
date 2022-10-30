@@ -33,11 +33,11 @@ def generate_repr(obj: Any, class_name: str, attrs: List[str]) -> str:
 class CMUPronunciation(Base):
     __tablename__ = "cmu_pronunciations"
 
-    id = Column(Integer, primary_key=True)
-    word = Column(String)
-    arpabet = Column(String)
-    ipa = Column(String)
-    use_in_grader = Column(Boolean)
+    id: int = Column(Integer, primary_key=True)
+    word: str = Column(String)
+    arpabet: str = Column(String)
+    ipa: str = Column(String)
+    use_in_grader: bool = Column(Boolean)
 
     def __repr__(self):
         return generate_repr(
