@@ -11,7 +11,7 @@ from vosk import KaldiRecognizer, Model
 
 from model.model import FileSource, Submission
 from slack.app import app
-import bs4
+from slack_sdk.errors import SlackApiError
 
 
 SAMPLE_RATE = 16000
@@ -62,7 +62,10 @@ def vtt_link_to_transcript(link: str) -> str:
 
 
 def slack_file_id_to_transcript(file_id: str) -> str:
-    file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
+    try:
+        file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
+    except SlackApiError:
+        return ""
 
     url = file_info.get("url_private_download")
 
