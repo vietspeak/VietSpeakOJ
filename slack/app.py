@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 from slack_bolt import App, Say
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_sdk.errors import SlackApiError
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
 
 from bridges.submission_task_bridge import send_cache_feedback
@@ -48,7 +48,9 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     with Session(engine) as session:
         file_id = event.get("file_id")
         find_cache_submission = select(Submission).where(
-            Submission.audio_file == bytes(file_id, encoding="utf-8")
+            and_(Submission.audio_file == bytes(file_id, encoding="utf-8"),
+            Submission.source == FileSource.SLACK)
+
         )
 
         cache_submission: Submission = next(
