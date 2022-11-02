@@ -71,7 +71,7 @@ class User(Base):
     last_official_submission_timestamp = Column(TIMESTAMP)
 
     @classmethod
-    def generate_password(length: int = 10) -> str:
+    def generate_password(cls, length: int = 10) -> str:
         return "".join(random.choice(string.ascii_letters) for _ in range(length))
 
     @classmethod
