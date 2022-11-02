@@ -1,16 +1,16 @@
 import os
 from typing import Any, Dict, List, Optional
-import logging
 
 # Use the package we installed
 from slack_bolt import App, Say
 from slack_bolt.adapter.flask import SlackRequestHandler
+from slack_sdk.errors import SlackApiError
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from bridges.submission_task_bridge import send_cache_feedback
 from config.config import MANDATORY_CHANNEL
 from model.model import FileSource, Submission, User, engine
-from slack_sdk.web.client import WebClient
-from sqlalchemy.orm import Session
-from sqlalchemy import select
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -27,6 +27,7 @@ def is_official_check(dictionary: Dict[str, Any]):
 
     return False
 
+
 @app.event("team_join")
 def add_new_member_to_db(event: Optional[Dict[str, Any]], say: Say):
     user: Dict[str, Any] = event.get("user")
@@ -41,6 +42,7 @@ def add_new_member_to_db(event: Optional[Dict[str, Any]], say: Say):
             session.add(user_obj)
         session.commit()
 
+
 @app.event("file_shared")
 def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     with Session(engine) as session:
@@ -49,11 +51,16 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
             Submission.audio_file == bytes(file_id, encoding="utf-8")
         )
 
-        cache_submission: Submission = next(session.scalars(find_cache_submission), None)
+        cache_submission: Submission = next(
+            session.scalars(find_cache_submission), None
+        )
+        try:
+            file_info = app.client.files_info(file=file_id)
+        except SlackApiError:
+            file_info = {}
 
-        file_info = app.client.files_info(file=file_id)
         is_official = is_official_check(file_info.get("file", {}).get("shares", {}))
-        
+
         if cache_submission:
             cache_submission.is_official = is_official
             session.commit()
