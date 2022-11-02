@@ -84,7 +84,7 @@ class User(Base):
 
         return User(
             slack_id=user_id,
-            user_email=user_email,
+            email=user_email,
             password=cls.generate_password(),
             is_bot=is_bot,
             is_owner=is_owner,
@@ -92,7 +92,7 @@ class User(Base):
         )
 
     def update_from_dict(self, user: Dict[str, Any]):
-        self.user_email = user["profile"].get("email")
+        self.email = user["profile"].get("email")
         self.is_bot = user.get("is_bot", False)
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
