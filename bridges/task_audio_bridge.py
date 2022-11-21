@@ -8,12 +8,13 @@ from model.model import Task, engine
 
 def entry_point(session: Session, grading_transcript: GradingTranscript):
     stmt = select(Task).where(Task.audio_file != None)
-    task = next(session.scalars(stmt), None)
+    tasks = list(session.scalars(stmt))
 
-    if task:
-        transcript = bytes_to_transcript(task.audio_file)
-        task.grading_transcript = grading_transcript.get_grading_transcript(
-            task.sample_transcript, transcript
-        )
-        task.audio_file = None
-        session.commit()
+    if tasks:
+        for task in tasks:
+            transcript = bytes_to_transcript(task.audio_file)
+            task.grading_transcript = grading_transcript.get_grading_transcript(
+                task.sample_transcript, transcript
+            )
+            task.audio_file = None
+            session.commit()
