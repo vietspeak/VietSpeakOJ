@@ -85,7 +85,10 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
         session.add(new_submission)
         session.commit()
 
-@app.message()
+@app.event({
+    "type": "message",
+    "subtype": "message_replied"
+})
 def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
     user, text = event["user"], event["text"]
     logger.info(f"The user {user} changed the message to {text}")
