@@ -88,8 +88,8 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 @app.event({
     "type": "message"
 })
-def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
-    user, text = event["user"], event["text"]
+def a_likely_feedback_is_posted(logger, message: Optional[Dict[str, Any]]):
+    user, text = message["user"], message["text"]
     logger.info(f"The user {user} changed the message to {text}")
 
 from flask import Flask, request
