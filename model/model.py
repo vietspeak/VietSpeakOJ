@@ -148,5 +148,23 @@ class Task(Base):
         ]
         return generate_repr(self, "Task", attrs)
 
+class HumanFeedback(Base):
+    __tablename__ = "human_feedback"
+    id = Column(Integer, primary_key=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    content = Column(String)
+    created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
+
+
+    def __repr__(self):
+        attrs = [
+            "id",
+            "submission_id",
+            "user_id",
+            "content",
+            "created_time"
+        ]
+        return generate_repr(self, "Task", attrs)
 
 Base.metadata.create_all(engine)
