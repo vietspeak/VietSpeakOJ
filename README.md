@@ -29,7 +29,7 @@ Download a model from https://alphacephei.com/vosk/models, and unzip the model. 
 ```
 coverage run -m pytest tests && coverage report --show-missing
 ```
-## Make changes to the database
+## Database migrations
 ```
 alembic revision --autogenerate -m "Your commit message"
 alembic upgrade heads
