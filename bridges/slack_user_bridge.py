@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 from slack_sdk.errors import SlackApiError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-
+from http.client import IncompleteRead
 from model.model import User
 from slack_bolt import App
 
@@ -29,6 +29,8 @@ def entry_point(app: App, session: Session = None):
 
     except SlackApiError as e:
         logger.error("Error creating conversation: {}".format(e))
+    except IncompleteRead as e:
+        logger.error(f"Error creating conversation: {e}")
 
     new_users: List[User] = []
     for user in all_users:
