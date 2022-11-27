@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session
 from bridges.submission_task_bridge import send_cache_feedback
 from config.config import MANDATORY_CHANNEL
 from model.model import FileSource, Submission, User, engine
+import logging
+
+logger = logging.getLogger()
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -90,7 +93,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     "subtype": "message_replied"
 })
 def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]]):
-    print("I'm here")
+    logger.info("I'm here")
 
 from flask import Flask, request
 
