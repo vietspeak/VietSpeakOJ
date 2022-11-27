@@ -93,9 +93,9 @@ def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
     logger.info(event)
     print(event)
     if "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL: # is a feedback
-        parent_message = app.client.conversations_history(channel=MANDATORY_CHANNEL, inclusive=True, latest=event.get("thread_ts"), limit=1)
-        logger.info(parent_message)
-        print(parent_message)
+        parent_message = app.client.conversations_history(channel=MANDATORY_CHANNEL, inclusive=True, latest=event.get("thread_ts"), limit=1).get("messages")[0]
+        file_ids = [x.get("id") for x in parent_message.get("files", [])]
+        print(parent_message, file_ids)
 
 from flask import Flask, request
 
