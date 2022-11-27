@@ -85,6 +85,13 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
         session.add(new_submission)
         session.commit()
 
+@app.event({
+    "type": "message",
+    "subtype": "message_replied",
+    "channel": MANDATORY_CHANNEL
+})
+def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]]):
+    print("I'm here")
 
 from flask import Flask, request
 
