@@ -90,6 +90,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     "type": "message"        
 })
 def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
+    logger.info(event)
     if "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL: # is a feedback
         parent_message = app.client.conversations_history(channel=MANDATORY_CHANNEL, inclusive=True, latest=event.get("thread_ts"), limit=1)
         logger.info(parent_message)
