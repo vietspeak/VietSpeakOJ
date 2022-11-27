@@ -87,8 +87,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 
 @app.event({
     "type": "message",
-    "subtype": "message_replied",
-    "channel": MANDATORY_CHANNEL
+    "subtype": "message_replied"
 })
 def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]]):
     print("I'm here")
