@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from bridges.submission_task_bridge import send_cache_feedback
 from config.config import MANDATORY_CHANNEL
 from model.model import FileSource, Submission, User, engine
+import re
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -85,7 +86,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
         session.add(new_submission)
         session.commit()
 
-@app.message("")
+@app.message(re.compile(".+"))
 def a_likely_feedback_is_posted(logger, message: Optional[Dict[str, Any]]):
     user, text = message["user"], message["text"]
     logger.info(f"The user {user} changed the message to {text}")
