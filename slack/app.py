@@ -103,7 +103,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
         with Session(engine) as session:
             find_real_user_id = select(User).where(
-                User.slack_id == event.get("user_id")
+                User.slack_id == event.get("user")
             )
             user: User = next(session.scalars(find_real_user_id), None)
             if not user:
