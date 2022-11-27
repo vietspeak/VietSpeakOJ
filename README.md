@@ -5,7 +5,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 python3 -m venv env
 source env/bin/activate
-pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp
+pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic
 sudo apt-get install ffmpeg unzip
 mkdir database
 mkdir tmp
@@ -29,6 +29,12 @@ Download a model from https://alphacephei.com/vosk/models, and unzip the model. 
 ```
 coverage run -m pytest tests && coverage report --show-missing
 ```
+## Make changes to the database
+```
+alembic revision --autogenerate -m "Your commit message"
+alembic upgrade heads
+```
+
 ## Deployment
 ```
 sudo ufw allow $PORT
