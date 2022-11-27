@@ -90,7 +90,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     "type": "message"        
 })
 def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
-    assert False
+    print(event)
 
 from flask import Flask, request
 
