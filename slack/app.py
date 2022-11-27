@@ -89,9 +89,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 
 
 @app.event({"type": "message"})
-def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]], say: Say):
-    logger.info(event)
-    print(event)
+def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
     if (
         "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL
     ):  # is a feedback
