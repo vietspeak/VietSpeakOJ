@@ -1,17 +1,17 @@
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 # Use the package we installed
 from slack_bolt import App, Say
 from slack_bolt.adapter.flask import SlackRequestHandler
 from slack_sdk.errors import SlackApiError
-from sqlalchemy import select, and_
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from bridges.submission_task_bridge import send_cache_feedback
 from config.config import MANDATORY_CHANNEL
-from model.model import FileSource, Submission, User, engine
-import re
+from model.model import FileSource, HumanFeedback, Submission, User, engine
 
 # Initializes your app with your bot token and signing secret
 app = App(
@@ -49,9 +49,10 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
     with Session(engine) as session:
         file_id = event.get("file_id")
         find_cache_submission = select(Submission).where(
-            and_(Submission.audio_file == bytes(file_id, encoding="utf-8"),
-            Submission.source == FileSource.SLACK)
-
+            and_(
+                Submission.audio_file == bytes(file_id, encoding="utf-8"),
+                Submission.source == FileSource.SLACK,
+            )
         )
 
         cache_submission: Submission = next(
@@ -86,16 +87,54 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
         session.add(new_submission)
         session.commit()
 
-@app.event({
-    "type": "message"        
-})
-def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]]):
+
+@app.event({"type": "message"})
+def a_likely_feedback_is_posted(logger, event: Optional[Dict[str, Any]], say: Say):
     logger.info(event)
     print(event)
-    if "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL: # is a feedback
-        parent_message = app.client.conversations_history(channel=MANDATORY_CHANNEL, inclusive=True, latest=event.get("thread_ts"), limit=1).get("messages")[0]
+    if (
+        "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL
+    ):  # is a feedback
+        parent_message = app.client.conversations_history(
+            channel=MANDATORY_CHANNEL,
+            inclusive=True,
+            latest=event.get("thread_ts"),
+            limit=1,
+        ).get("messages")[0]
         file_ids = [x.get("id") for x in parent_message.get("files", [])]
-        print(parent_message, file_ids)
+
+        with Session(engine) as session:
+            find_real_user_id = select(User).where(
+                User.slack_id == event.get("user_id")
+            )
+            user: User = next(session.scalars(find_real_user_id), None)
+            if not user:
+                say(
+                    "Bot chưa biết bạn là ai và vì thế nhận xét của bạn chưa được ghi nhận. Hãy đợi bot 1 phút để tìm hiểu bạn và sau đó nhận xét lại."
+                )
+                return
+
+            for file_id in file_ids:
+                find_cache_submission = select(Submission).where(
+                    and_(
+                        Submission.audio_file == bytes(file_id, encoding="utf-8"),
+                        Submission.source == FileSource.SLACK,
+                    )
+                )
+                cache_submission: Submission = next(
+                    session.scalars(find_cache_submission), None
+                )
+
+                human_feedback = HumanFeedback(
+                    submission_id=cache_submission.id,
+                    user_id=user.id,
+                    content=event.get("text"),
+                )
+
+                session.add(human_feedback)
+
+            session.commit()
+
 
 from flask import Flask, request
 
