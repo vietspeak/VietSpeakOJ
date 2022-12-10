@@ -1,7 +1,7 @@
+import sys
 from dataclasses import dataclass
 from functools import cache
 from typing import Callable, Hashable, List, Tuple
-import sys
 
 MAX_N = 1000
 sys.setrecursionlimit(10**6)
@@ -17,9 +17,13 @@ class LCSResult:
 
 
 class LongestCommonSubsequence:
-    
     @classmethod
-    def solve(cls, seq_1: List[Hashable], seq_2: List[Hashable], equality: Callable[[Hashable, Hashable], bool] = lambda x, y: x==y) -> LCSResult:
+    def solve(
+        cls,
+        seq_1: List[Hashable],
+        seq_2: List[Hashable],
+        equality: Callable[[Hashable, Hashable], bool] = lambda x, y: x == y,
+    ) -> LCSResult:
         n = min(MAX_N, len(seq_1))
         m = min(MAX_N, len(seq_2))
 
@@ -29,7 +33,7 @@ class LongestCommonSubsequence:
                 return 0
 
             result = max(dp(x + 1, y), dp(x, y + 1))
-            if equality(seq_1[x],seq_2[y]):
+            if equality(seq_1[x], seq_2[y]):
                 result = max(result, dp(x + 1, y + 1) + 1)
 
             return result
@@ -40,7 +44,7 @@ class LongestCommonSubsequence:
 
             result = dp(x, y)
 
-            if equality(seq_1[x],seq_2[y]) and result == dp(x + 1, y + 1) + 1:
+            if equality(seq_1[x], seq_2[y]) and result == dp(x + 1, y + 1) + 1:
                 tmp = trace_reverse(x + 1, y + 1)
                 tmp.append((x, y))
                 return tmp

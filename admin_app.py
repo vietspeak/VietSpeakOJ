@@ -1,4 +1,4 @@
-from website.app import app
+from website.admin_app import app
 import os
 
 if __name__ == "__main__":
