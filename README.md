@@ -17,6 +17,8 @@ Add the following lines to the end of your `~/.bashrc` file
 export SLACK_BOT_TOKEN=<your Slack bot token>
 export SLACK_SIGNING_SECRET=<your Slack signing secret>
 export PORT=<port>
+export ADMIN_PORT=<admin_port>
+export USER_PORT=<user_port>
 ```
 
 Run the following command
