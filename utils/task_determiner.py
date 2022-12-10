@@ -1,12 +1,13 @@
 import re
 from typing import List
 
-from model.model import Task
 from scipy import sparse
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import linear_kernel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from model.model import Task
 
 MAX_TRAINING_TRANSCRIPTS = 100
 

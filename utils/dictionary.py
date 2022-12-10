@@ -46,7 +46,6 @@ class Dictionary:
         result.sort(key=lambda x: x.ipa.count("ə"), reverse=True)
         return result
 
-
     def get_pronunciation_from_text(
         self, text: str, for_grader: bool = False
     ) -> List[List[CMUPronunciation]]:
