@@ -10,13 +10,16 @@ from datetime import datetime
 def entry_point(session: Session):
     feedback_stmt = text(
         """
-        SELECT user_id, created_time 
+        SELECT user_id, created_time
         FROM (
-            SELECT H.user_id AS user_id, 
-                   H.created_time AS created_time, 
-                   dense_rank() OVER (PARTITION BY H.user_id ORDER BY H.created_time DESC) as ranking 
-            FROM human_feedback H, submissions S 
-            WHERE H.submission_id == S.id AND H.user_id != S.user_id
+            SELECT user_id, created_time, dense_rank() OVER (PARTITION BY user_id ORDER BY created_time DESC) as ranking
+            FROM (
+	            SELECT H.user_id AS user_id, 
+		               MIN(H.created_time) AS created_time
+	            FROM human_feedback H, submissions S 
+	            WHERE H.submission_id == S.id AND H.user_id != S.user_id
+	            GROUP BY H.user_id, S.id
+            )
         )
         WHERE ranking = 2;
     """
