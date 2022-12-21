@@ -2,7 +2,7 @@ import time
 import os
 from sqlalchemy.orm import Session
 
-from bridges import task_audio_bridge, submission_audio_bridge, submission_transcript_bridge, submission_task_bridge, slack_user_bridge
+from bridges import task_audio_bridge, submission_audio_bridge, submission_transcript_bridge, submission_task_bridge, slack_user_bridge, submission_timestamp_bridge, human_feedback_timestamp_bridge
 from grader.grading_transcript import GradingTranscript, LegacyGrader
 from model.model import engine
 from utils.dictionary import Dictionary
@@ -35,4 +35,9 @@ while True:
         submission_audio_bridge.entry_point(session)
         submission_transcript_bridge.entry_point(session, task_determiner)
         submission_task_bridge.entry_point(app, session, grader)
+
+        submission_timestamp_bridge.entry_point(session)
+        human_feedback_timestamp_bridge.entry_point(session)
         time.sleep(SLEEP_INTERVAL)
+
+

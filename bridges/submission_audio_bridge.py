@@ -77,7 +77,9 @@ def slack_file_id_to_transcript(file_id: str) -> str:
     if not vtt_link and file_info.get("transcription"):
         time.sleep(file_info.get("duration_ms", 60000) / 1000)
         try:
-            file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
+            file_info: Dict[str, Any] = app.client.files_info(file=file_id).get(
+                "file", {}
+            )
         except SlackApiError:
             return ""
         vtt_link = file_info.get("vtt")

@@ -18,7 +18,7 @@ def send_feedback_message(
 ):
     if submission.score <= CUTOFF_SCORE:
         return
-    
+
     user_find_stmt = select(User).where(User.id == submission.user_id)
     user: User = next(session.scalars(user_find_stmt), None)
     slack_id = user.slack_id

@@ -69,6 +69,7 @@ class User(Base):
     is_admin = Column(Boolean)
     created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
     last_official_submission_timestamp = Column(TIMESTAMP)
+    second_to_last_human_feedback_timestamp = Column(TIMESTAMP)
 
     @classmethod
     def generate_password(cls, length: int = 10) -> str:
