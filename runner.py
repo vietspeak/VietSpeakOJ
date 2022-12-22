@@ -11,7 +11,7 @@ from bridges import (
     submission_timestamp_bridge,
     human_feedback_timestamp_bridge,
     user_elimination,
-    user_reactivator
+    user_reactivation
 )
 from grader.grading_transcript import GradingTranscript, LegacyGrader
 from model.model import engine
@@ -50,5 +50,5 @@ while True:
         submission_timestamp_bridge.entry_point(session)
         human_feedback_timestamp_bridge.entry_point(session)
         user_elimination.entry_point(session)
-        user_reactivator.entry_point(session)
+        user_reactivation.entry_point(session)
         time.sleep(SLEEP_INTERVAL)
