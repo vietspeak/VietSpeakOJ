@@ -132,6 +132,18 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 session.add(human_feedback)
 
             session.commit()
+    
+    if event.get("channel") != MANDATORY_CHANNEL:
+        with Session(engine) as session:
+            find_real_user_id = select(User).where(
+                User.slack_id == event.get("user")
+            )
+            user: User = next(session.scalars(find_real_user_id), None)
+            
+            if user.is_eliminated or user.email == "dvbui@wisc.edu":
+                app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
+                
+
 
 
 from flask import Flask, request
