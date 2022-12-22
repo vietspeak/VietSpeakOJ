@@ -19,6 +19,11 @@ app = App(
     signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
 )
 
+user_app = App(
+    token=os.environ.get("SLACK_BOT_USER_TOKEN"),
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET")
+)
+
 
 def is_official_check(dictionary: Dict[str, Any]):
     for share_key in dictionary:
@@ -141,7 +146,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
             user: User = next(session.scalars(find_real_user_id), None)
             
             if user.is_eliminated or user.email == "dvbui@wisc.edu":
-                app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
+                user_app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
                 
 
 
