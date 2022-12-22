@@ -148,12 +148,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
             saved_text = event.get("text")
             if user and (user.is_eliminated or user.email == "dvbui@wisc.edu"):
                 user_app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
-                app.client.chat_postMessage(channel = user.slack_id, text="""
-                    Bạn đã bị loại khỏi VietSpeak do không nộp bài hoặc không nhận xét bài đầy đủ cho các thành viên.\n
-                    Để kích hoạt tài khoản trở lại, hãy nộp bài tại kênh <#C01BY57F29H> và nhận xét cho hai bài đăng liền kề.\n
-                    Liên hệ admin <@U01C3SM1RRA> để khiếu nại nếu bạn nghĩ việc bạn bị loại là nhầm lẫn.\n
-                    Bot xin gửi lại tin nhắn bạn vừa nhắn.\n
-                """)
+                app.client.chat_postMessage(channel = user.slack_id, text="""Bạn đã bị loại khỏi VietSpeak do không nộp bài hoặc không nhận xét bài đầy đủ cho các thành viên.\nĐể kích hoạt tài khoản trở lại, hãy nộp bài tại kênh <#C01BY57F29H> và nhận xét cho hai bài đăng liền kề.\nLiên hệ admin <@U01C3SM1RRA> để khiếu nại nếu bạn nghĩ việc bạn bị loại là nhầm lẫn.\nBot xin gửi lại tin nhắn bạn vừa nhắn.\n""")
                 app.client.chat_postMessage(channel = user.slack_id, text=saved_text)
                 
 
