@@ -145,7 +145,8 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
             )
             user: User = next(session.scalars(find_real_user_id), None)
             
-            if user.is_eliminated or user.email == "dvbui@wisc.edu":
+            print(event.get("user"), user)
+            if user and (user.is_eliminated or user.email == "dvbui@wisc.edu"):
                 user_app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
                 
 
