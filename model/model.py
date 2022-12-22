@@ -1,21 +1,11 @@
-from email.policy import default
 import enum
 import random
 import string
+from email.policy import default
 from typing import Any, Dict, List
 
-from sqlalchemy import (
-    BLOB,
-    TIMESTAMP,
-    Boolean,
-    Column,
-    Enum,
-    Float,
-    ForeignKey,
-    Integer,
-    String,
-    create_engine,
-)
+from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float,
+                        ForeignKey, Integer, String, create_engine)
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.sql import func
 
@@ -70,6 +60,7 @@ class User(Base):
     created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
     last_official_submission_timestamp = Column(TIMESTAMP)
     second_to_last_human_feedback_timestamp = Column(TIMESTAMP)
+    is_eliminated = Column(Boolean, server_default="0", nullable=False)
 
     @classmethod
     def generate_password(cls, length: int = 10) -> str:
@@ -149,6 +140,7 @@ class Task(Base):
         ]
         return generate_repr(self, "Task", attrs)
 
+
 class HumanFeedback(Base):
     __tablename__ = "human_feedback"
     id = Column(Integer, primary_key=True)
@@ -157,15 +149,9 @@ class HumanFeedback(Base):
     content = Column(String)
     created_time = Column(TIMESTAMP, nullable=False, server_default=func.now())
 
-
     def __repr__(self):
-        attrs = [
-            "id",
-            "submission_id",
-            "user_id",
-            "content",
-            "created_time"
-        ]
+        attrs = ["id", "submission_id", "user_id", "content", "created_time"]
         return generate_repr(self, "Task", attrs)
+
 
 Base.metadata.create_all(engine)

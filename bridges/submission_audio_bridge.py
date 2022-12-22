@@ -1,18 +1,17 @@
 import json
-import time
-import requests
 import os
+import time
 from subprocess import PIPE, Popen
 from typing import Any, Dict
 
+import requests
+from slack_sdk.errors import SlackApiError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from vosk import KaldiRecognizer, Model
 
 from model.model import FileSource, Submission
 from slack.app import app
-from slack_sdk.errors import SlackApiError
-
 
 SAMPLE_RATE = 16000
 

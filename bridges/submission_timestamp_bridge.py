@@ -1,10 +1,12 @@
+from datetime import datetime
 from typing import List, Tuple
+
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sqlalchemy import update
+
 from model.model import User
 from utils.timezone_converter import FORMAT
-from datetime import datetime
 
 
 def entry_point(session: Session):

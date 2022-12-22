@@ -1,12 +1,13 @@
 from re import sub
 from typing import List
 
+from slack_bolt import App
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
+
+from config.config import CUTOFF_SCORE
 from grader.grading_transcript import LegacyGrader
 from model.model import Submission, Task, User, WordError
-from slack_bolt import App
-from config.config import CUTOFF_SCORE
 
 
 def send_feedback_message(
@@ -38,7 +39,7 @@ def send_feedback_message(
 
         result += f"*{error_msg}*\n"
 
-    result += f"Đây là những gì mình nghe được từ bạn:\n"
+    result += "Đây là những gì mình nghe được từ bạn:\n"
 
     result += submission.transcript.lower() + "\n"
     result += "Điểm: {:0.2f}".format(submission.score * 100)

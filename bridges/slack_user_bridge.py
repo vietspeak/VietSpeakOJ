@@ -2,14 +2,15 @@ import logging
 import random
 import string
 import time
+from http.client import IncompleteRead
 from typing import Any, Dict, List
 
+from slack_bolt import App
 from slack_sdk.errors import SlackApiError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from http.client import IncompleteRead
+
 from model.model import User
-from slack_bolt import App
 
 logger = logging.getLogger(__name__)
 

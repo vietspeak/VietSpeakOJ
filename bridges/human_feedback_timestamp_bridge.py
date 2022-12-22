@@ -1,10 +1,12 @@
+from datetime import datetime
 from typing import List, Tuple
+
+from sqlalchemy import update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
-from sqlalchemy import update
+
 from model.model import User
 from utils.timezone_converter import FORMAT
-from datetime import datetime
 
 
 def entry_point(session: Session):
@@ -14,9 +16,9 @@ def entry_point(session: Session):
         FROM (
             SELECT user_id, created_time, dense_rank() OVER (PARTITION BY user_id ORDER BY created_time DESC) as ranking
             FROM (
-	            SELECT H.user_id AS user_id, 
+	            SELECT H.user_id AS user_id,
 		               MIN(H.created_time) AS created_time
-	            FROM human_feedback H, submissions S 
+	            FROM human_feedback H, submissions S
 	            WHERE H.submission_id == S.id AND H.user_id != S.user_id
 	            GROUP BY H.user_id, S.id
             )
@@ -32,7 +34,9 @@ def entry_point(session: Session):
             update(User)
             .where(User.id == user_id)
             .values(
-                second_to_last_human_feedback_timestamp=datetime.strptime(timestamp, FORMAT)
+                second_to_last_human_feedback_timestamp=datetime.strptime(
+                    timestamp, FORMAT
+                )
             )
         )
         session.execute(update_stmt)
