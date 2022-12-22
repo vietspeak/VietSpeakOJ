@@ -1,18 +1,17 @@
 import json
-import time
-import requests
 import os
+import time
 from subprocess import PIPE, Popen
 from typing import Any, Dict
 
+import requests
+from slack_sdk.errors import SlackApiError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from vosk import KaldiRecognizer, Model
 
 from model.model import FileSource, Submission
 from slack.app import app
-from slack_sdk.errors import SlackApiError
-
 
 SAMPLE_RATE = 16000
 
@@ -77,7 +76,9 @@ def slack_file_id_to_transcript(file_id: str) -> str:
     if not vtt_link and file_info.get("transcription"):
         time.sleep(file_info.get("duration_ms", 60000) / 1000)
         try:
-            file_info: Dict[str, Any] = app.client.files_info(file=file_id).get("file", {})
+            file_info: Dict[str, Any] = app.client.files_info(file=file_id).get(
+                "file", {}
+            )
         except SlackApiError:
             return ""
         vtt_link = file_info.get("vtt")
