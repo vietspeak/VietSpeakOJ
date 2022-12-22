@@ -111,32 +111,27 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 User.slack_id == event.get("user")
             )
             user: User = next(session.scalars(find_real_user_id), None)
-            if not user:
-                say(
-                    "Bot chưa biết bạn là ai và vì thế nhận xét của bạn chưa được ghi nhận. Hãy đợi bot 1 phút để tìm hiểu bạn và sau đó nhận xét lại."
-                )
-                return
-
-            for file_id in file_ids:
-                find_cache_submission = select(Submission).where(
-                    and_(
-                        Submission.audio_file == bytes(file_id, encoding="utf-8"),
-                        Submission.source == FileSource.SLACK,
+            if user:
+                for file_id in file_ids:
+                    find_cache_submission = select(Submission).where(
+                        and_(
+                            Submission.audio_file == bytes(file_id, encoding="utf-8"),
+                            Submission.source == FileSource.SLACK,
+                        )
                     )
-                )
-                cache_submission: Submission = next(
-                    session.scalars(find_cache_submission), None
-                )
+                    cache_submission: Submission = next(
+                        session.scalars(find_cache_submission), None
+                    )
 
-                human_feedback = HumanFeedback(
-                    submission_id=cache_submission.id,
-                    user_id=user.id,
-                    content=event.get("text"),
-                )
+                    human_feedback = HumanFeedback(
+                        submission_id=cache_submission.id,
+                        user_id=user.id,
+                        content=event.get("text"),
+                    )
 
-                session.add(human_feedback)
+                    session.add(human_feedback)
 
-            session.commit()
+                session.commit()
     
     if event.get("channel") != MANDATORY_CHANNEL:
         with Session(engine) as session:
