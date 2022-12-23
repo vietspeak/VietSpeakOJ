@@ -1,9 +1,14 @@
 import io
+from typing import List
 
 from flask import Flask, flash, redirect, render_template, request
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select, desc
-from model.model import FileSource, Submission, Task, TaskLevel, engine
+
+from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
+from model.model import FileSource, Submission, Task, TaskLevel, User, engine
+from utils.timezone_converter import timezone_converter
+from website.app import COLOR_MAP
 
 app = Flask(__name__, template_folder="templates")
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
@@ -69,30 +74,31 @@ def test_task():
 
     return render_template("test_task.html")
 
+
 @app.route("/edit_tasks", methods=["GET", "POST"])
 def edit_tasks():
     if request.method == "POST":
         task_id = int(request.values.get("task_id", 0))
         with Session(engine) as session:
             stmt = select(Task).where(Task.id == task_id)
-            task = session.scalar(stmt)
+            task: Task = session.scalar(stmt)
             if task:
                 task.task_number = int(request.values.get("task_number", 0))
                 task.level = TaskLevel._member_map_[request.values.get("task_level")]
                 task.title = request.values.get("task_title", "")
                 task.sample_transcript = request.values.get("transcript", "")
             session.commit()
-        
+
         return "Done!"
 
-            
     result = ["<html>"]
     with Session(engine) as session:
         stmt = select(Task).order_by(desc(Task.task_number))
-        
+
         for task in session.scalars(stmt):
             task: Task
-            result.append(f"""
+            result.append(
+                f"""
                 <form id="form{task.id}" action="/edit_tasks" method="post">
                     ID: <input type="text" name="task_id" value="{task.id}"></input><br>
                     Task number: <input type="text" name="task_number" value="{task.task_number if task.task_number is not None else ''}"></input><br>
@@ -101,7 +107,85 @@ def edit_tasks():
                     Sample transcript: <textarea name="transcript" form="form{task.id}">{task.sample_transcript if task.sample_transcript is not None else ''}</textarea><br>
                     <input type="submit" value="Edit Task ID {task.id}"></input>
                 </form>
-            """)
+            """
+            )
 
     result.append("</html>")
     return "".join(result)
+
+
+@app.route("/regrade_submissions", methods=["GET", "POST"])
+def regrade_submissions():
+    if request.method == "POST":
+        submission_id = int(request.values.get("submit").split(" ")[1])
+        with Session(engine) as session:
+            stmt = select(Submission).where(Submission.id == submission_id)
+            submission: Submission = session.scalar(stmt)
+            if submission:
+                submission.transcript = None
+                submission.task_id = None
+                submission.score = None
+            session.commit()
+
+        return "Done!"
+
+    result: List[str] = [
+        """
+        <h1>Submission Queue</h1>
+        <table class="table">
+            <tr>
+                <th>#</th>
+                <th>User ID</th>
+                <th>Task</th>
+                <th>Level</th>
+                <th>When</th>
+                <th>Action</th>
+            </tr>
+    """
+    ]
+    with Session(engine) as session:
+        find_submission_stmt = (
+            select(Submission)
+            .where(Submission.source == FileSource.SLACK)
+            .order_by(desc(Submission.id))
+            .limit(MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE)
+        )
+        rows: List[Submission] = list(session.scalars(find_submission_stmt))
+        for submission in rows:
+            if submission.task_id:
+                find_task_stmt = select(Task).where(Task.id == submission.task_id)
+                task_info: Task = session.scalar(find_task_stmt)
+                task_color: str = COLOR_MAP[task_info.level]
+            else:
+                task_info: Task = None
+                task_color: str = "gray"
+
+            find_user_stmt = select(User).where(User.id == submission.user_id)
+            user: User = session.scalar(find_user_stmt)
+
+            result.append(
+                f"""
+            <tr style="background-color:{task_color}">
+                <td>{submission.id}</td>
+                <td>{user.slack_id}</td>
+            """
+            )
+
+            if task_info:
+                result.append(
+                    f"<td>{task_info.task_number}</td><td>{str(task_info.level).split('.')[1]}</td>"
+                )
+            else:
+                result.append("<td></td>" * 2)
+
+            result.append(
+                f"""
+                <td>{timezone_converter(str(submission.created_time))}</td>
+                <td><form action="/regrade_submissions" method="post"><input type="submit" name="submit" value="Regrade {submission.id}"></form>
+            </tr>
+            """
+            )
+
+    result.append("</table>")
+    html_source = "\n".join(result)
+    return render_template("header.html") + html_source + render_template("footer.html")

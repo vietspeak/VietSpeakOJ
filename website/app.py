@@ -8,7 +8,7 @@ from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
-from model.model import Submission, Task, engine, TaskLevel
+from model.model import Submission, Task, TaskLevel, engine
 from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
@@ -17,8 +17,9 @@ COLOR_MAP = {
     TaskLevel.YELLOW: "gold",
     TaskLevel.GREEN: "LimeGreen",
     TaskLevel.BLUE: "Aqua",
-    TaskLevel.RED: "Salmon"
+    TaskLevel.RED: "Salmon",
 }
+
 
 @app.route("/submission_queue")
 def submission_queue():
