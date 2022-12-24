@@ -53,6 +53,8 @@ def test_task():
         # empty file without a filename.
         task_number = int(request.values["task_number"])
         level = getattr(TaskLevel, request.values["level"].upper())
+        title = request.values.get("task_title", "")
+        audio_link = request.values.get("task_audio_link", "")
         sample_transcript = request.values["sample_transcript"]
 
         if file.filename == "":
@@ -68,6 +70,8 @@ def test_task():
                     level=level,
                     sample_transcript=sample_transcript,
                     audio_file=blob_file.getvalue(),
+                    audio_link=audio_link,
+                    title=title
                 )
                 session.add(row)
                 session.commit()
@@ -87,6 +91,7 @@ def edit_tasks():
                 task.level = TaskLevel._member_map_[request.values.get("task_level")]
                 task.title = request.values.get("task_title", "")
                 task.sample_transcript = request.values.get("transcript", "")
+                task.audio_link = request.values.get("task_audio_link", "")
             session.commit()
 
         return "Done!"
@@ -104,6 +109,7 @@ def edit_tasks():
                     Task number: <input type="text" name="task_number" value="{task.task_number if task.task_number is not None else ''}"></input><br>
                     Level: <input type="text" name="task_level" value="{str(task.level).split(".")[1]}"></input><br>
                     Title: <input type="text" name="task_title" value="{task.title if task.title is not None else ''}"></input><br>
+                    Audio Link: <input type="text" name="task_audio_link" value="{task.audio_link if task.audio_link is not None else ""}"></input><br>
                     Sample transcript: <textarea name="transcript" form="form{task.id}">{task.sample_transcript if task.sample_transcript is not None else ''}</textarea><br>
                     <input type="submit" value="Edit Task ID {task.id}"></input>
                 </form>

@@ -77,7 +77,8 @@ def tasks_page():
         print(task_info)
 
         task_transcript = "".join(f"<p>{x}</p>" for x in task_info.sample_transcript.split("\n")) if task_info else ""
-
+        task_link = task_info.audio_link if task_info and task_info.audio_link else ""
+        task_title = task_info.title if task_info and task_info.title else ""
         return (
             render_template("header.html")
             + render_template(
@@ -86,8 +87,9 @@ def tasks_page():
                 previous_task_link=previous_task_link,
                 next_task_link=next_task_link,
                 task_level=task_level_str,
-                task_link="",
-                task_transcript=task_transcript
+                task_link=task_link,
+                task_transcript=task_transcript,
+                task_title=task_title
             ) + render_template("footer.html")
         )
 

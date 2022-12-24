@@ -1,7 +1,7 @@
 <!doctype html>
 <title>Create a new task</title>
 <h1>Create a new task</h1>
-<form method=post enctype=multipart/form-data>
+<form method=post enctype=multipart/form-data id="formtask">
     <p>Task number: <input type=text name=task_number></p>
     <p>Level: <select name=level>
         <option value=yellow>Yellow</option>
@@ -9,7 +9,9 @@
         <option value=blue>Blue</option>
         <option value=red>Red</option>
     </select></p>
-    <p>Sample transcript: <input type=text name=sample_transcript></p>
+    <p>Title: <input type=text name=task_title></p>
+    <p>Audio link: <input type=text name=task_audio_link></p>
+    <p>Sample transcript: <textarea name="transcript" form="formtask"></textarea></p>
     <p>Sample audio: <input type=file name=file></p>
     <input type=submit value=Submit>
 </form>

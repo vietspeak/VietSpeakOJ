@@ -125,6 +125,7 @@ class Task(Base):
     level = Column(Enum(TaskLevel))
     title = Column(String)
     audio_file = Column(BLOB)
+    audio_link = Column(String, server_default="")
     sample_transcript = Column(String)
     grading_transcript = Column(String)
 
