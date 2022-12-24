@@ -20,6 +20,7 @@ COLOR_MAP = {
     TaskLevel.RED: "Salmon",
 }
 
+
 @app.route("/test_submission", methods=["GET", "POST"])
 def test_submission():
     if request.method == "POST":
@@ -77,7 +78,7 @@ def test_task():
                     sample_transcript=sample_transcript,
                     audio_file=blob_file.getvalue(),
                     audio_link=audio_link,
-                    title=title
+                    title=title,
                 )
                 session.add(row)
                 session.commit()

@@ -79,11 +79,17 @@ def tasks_page():
     task_level = TaskLevel._member_map_.get(task_level_str.upper(), TaskLevel.YELLOW)
 
     with Session(engine) as session:
-        task_stmt = select(Task).where(and_(Task.task_number == task_number,Task.level == task_level))
+        task_stmt = select(Task).where(
+            and_(Task.task_number == task_number, Task.level == task_level)
+        )
         task_info: Task = session.scalar(task_stmt)
         print(task_info)
 
-        task_transcript = "".join(f"<p>{x}</p>" for x in task_info.sample_transcript.split("\n")) if task_info else ""
+        task_transcript = (
+            "".join(f"<p>{x}</p>" for x in task_info.sample_transcript.split("\n"))
+            if task_info
+            else ""
+        )
         task_link = task_info.audio_link if task_info and task_info.audio_link else ""
         task_title = task_info.title if task_info and task_info.title else ""
         return (
@@ -96,8 +102,9 @@ def tasks_page():
                 task_level=task_level_str,
                 task_link=task_link,
                 task_transcript=task_transcript,
-                task_title=task_title
-            ) + render_template("footer.html")
+                task_title=task_title,
+            )
+            + render_template("footer.html")
         )
 
 
@@ -139,7 +146,9 @@ def submission_queue():
 
             button_label = "UNKNOWN"
             if task_info:
-                button_label = f"{str(task_info.level).split('.')[1]} {task_info.task_number}"
+                button_label = (
+                    f"{str(task_info.level).split('.')[1]} {task_info.task_number}"
+                )
 
             button_link = ""
             if task_info:
