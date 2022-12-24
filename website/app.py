@@ -13,11 +13,18 @@ from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
 
-COLOR_MAP = {
-    TaskLevel.YELLOW: "gold",
-    TaskLevel.GREEN: "LimeGreen",
-    TaskLevel.BLUE: "Aqua",
-    TaskLevel.RED: "Salmon",
+BUTTON_MAP = {
+    TaskLevel.YELLOW: "warning",
+    TaskLevel.GREEN: "success",
+    TaskLevel.BLUE: "primary",
+    TaskLevel.RED: "danger",
+}
+
+TASK_STR_MAP = {
+    TaskLevel.YELLOW: "Yellow",
+    TaskLevel.GREEN: "Green",
+    TaskLevel.BLUE: "Blue",
+    TaskLevel.RED: "Red",
 }
 
 
@@ -102,9 +109,7 @@ def submission_queue():
         <table class="table">
             <tr>
                 <th>#</th>
-                <th>User ID</th>
                 <th>Task</th>
-                <th>Level</th>
                 <th>When</th>
             </tr>
     """
@@ -120,25 +125,31 @@ def submission_queue():
             if submission.task_id:
                 find_task_stmt = select(Task).where(Task.id == submission.task_id)
                 task_info: Task = session.scalar(find_task_stmt)
-                task_color: str = COLOR_MAP[task_info.level]
+                task_button: str = BUTTON_MAP[task_info.level]
             else:
                 task_info: Task = None
-                task_color: str = "gray"
+                task_button: str = "secondary"
 
             result.append(
                 f"""
-            <tr style="background-color:{task_color}">
+            <tr>
                 <td>{submission.id}</td>
-                <td>{submission.user_id}</td>
             """
             )
 
+            button_label = "UNKNOWN"
             if task_info:
-                result.append(
-                    f"<td>{task_info.task_number}</td><td>{str(task_info.level).split('.')[1]}</td>"
-                )
-            else:
-                result.append("<td></td>" * 2)
+                button_label = f"{str(task_info.level).split('.')[1]} {task_info.task_number}"
+
+            button_link = ""
+            if task_info:
+                button_link = f"/tasks?number={task_info.task_number}&level={TASK_STR_MAP[task_info.level]}"
+
+            result.append(
+                f"""
+                    <td><a type="button" class="btn btn-{task_button}" href="{button_link}">{button_label}</a></td>
+                """
+            )
 
             result.append(
                 f"""

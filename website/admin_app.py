@@ -8,11 +8,17 @@ from sqlalchemy.orm import Session
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
 from model.model import FileSource, Submission, Task, TaskLevel, User, engine
 from utils.timezone_converter import timezone_converter
-from website.app import COLOR_MAP
 
 app = Flask(__name__, template_folder="templates")
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1000 * 1000
 
+
+COLOR_MAP = {
+    TaskLevel.YELLOW: "gold",
+    TaskLevel.GREEN: "LimeGreen",
+    TaskLevel.BLUE: "Aqua",
+    TaskLevel.RED: "Salmon",
+}
 
 @app.route("/test_submission", methods=["GET", "POST"])
 def test_submission():
