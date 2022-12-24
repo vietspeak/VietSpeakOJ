@@ -41,7 +41,9 @@ alembic upgrade heads
 ## Deployment
 ```
 sudo ufw allow $PORT
+sudo ufw allow 443
 gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
+gunicorn --bind 0.0.0.0:5000 wsgi2:app
 ```
 ## Load remote database
 ```
