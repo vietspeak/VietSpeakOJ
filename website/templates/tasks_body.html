@@ -1,0 +1,48 @@
+<div class="container">
+    <div class="d-flex justify-content-between mb-3">
+        <div class="p-2">
+          {{ previous_task_link|safe }}
+        </div>
+        <div class="p-2">
+          <h1>Task {{ task_number }}</h1>
+        </div>
+        <div class="p-2">
+            {{ next_task_link|safe }}
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="d-grid col">
+            <a type="button" class="btn btn-warning" href="/tasks?number={{task_number}}&level=Yellow">Yellow</a>
+        </div>
+        <div class="d-grid col">
+            <a type="button" class="btn btn-success" href="/tasks?number={{task_number}}&level=Green">Green</a>
+        </div>
+        <div class="d-grid col">
+            <a type="button" class="btn btn-primary" href="/tasks?number={{task_number}}&level=Blue">Blue</a>
+        </div>
+        <div class="d-grid col">
+            <a type="button" class="btn btn-danger" href="/tasks?number={{task_number}}&level=Red">Red</a>
+        </div>
+    </div>
+    <div class="row">
+        <h1>Task {{task_number}} {{task_level}}</h1>
+    </div>
+    <div class="row">
+        <p><b>Bước 1:</b> Nghe hoặc xem video/audio sau: <a href="{{task_link}}">{{task_link}}</a></p>
+    </div>
+    <div class="row">
+        <p><b>Bước 2:</b> Ghi âm theo transcript:</p>
+        <p>{{task_transcript}}</p>
+    </div>
+    <div class="row">
+        <p><b>Bước 3 (không bắt buộc):</b> Nộp thử với <a type="button" class="btn btn-primary btn-sm" href="https://tvevoices4all-group.slack.com/archives/D048NSF657C" target="_blank">VietSpeak OJ</a></p>
+    </div>
+    <div class="row">
+        <p><b>Bước 4:</b> Đổi tên file thu âm sao cho tên file chứa số task và màu task. Ví dụ như task{{task_number}}{{task_level}}.mp3</p>
+        <p>Việc đổi tên file thu âm sẽ tiện cho người nhận xét bài của bạn</p>
+    </div>
+    <div class="row">
+        <p><b>Bước 5:</b> Nộp bài tại <a type="button" class="btn btn-primary btn-sm" href="https://tvevoices4all-group.slack.com/archives/C01BY57F29H" target="_blank">#02-audios-posted</a>, và nhận xét cho hai bài đăng liền kề.</p>
+        <p><b>Nếu không hoàn thành bước này ít nhất một lần mỗi task, bạn sẽ bị loại ở task tiếp theo</b></p>
+    </div>
+</div>
