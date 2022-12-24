@@ -75,6 +75,9 @@ def tasks_page():
         task_stmt = select(Task).where(and_(Task.task_number == task_number,Task.level == task_level))
         task_info: Task = session.scalar(task_stmt)
         print(task_info)
+
+        task_transcript = "".join(f"<p>{x}</p>" for x in task_info.sample_transcript.split("\n")) if task_info else ""
+
         return (
             render_template("header.html")
             + render_template(
@@ -84,7 +87,7 @@ def tasks_page():
                 next_task_link=next_task_link,
                 task_level=task_level_str,
                 task_link="",
-                task_transcript=task_info.sample_transcript if task_info else ""
+                task_transcript=task_transcript
             ) + render_template("footer.html")
         )
 
