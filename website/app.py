@@ -49,7 +49,7 @@ def check_if_task_is_available(task_number):
 @app.route("/")
 def home_page():
     return (
-        render_template("header.html")
+        render_template("header.html", page_title="Home")
         + render_template("home_body.html")
         + render_template("footer.html")
     )
@@ -93,7 +93,10 @@ def tasks_page():
         task_link = task_info.audio_link if task_info and task_info.audio_link else ""
         task_title = task_info.title if task_info and task_info.title else ""
         return (
-            render_template("header.html")
+            render_template(
+                "header.html",
+                page_title=f"Task {task_number} {task_level_str} - {task_title}",
+            )
             + render_template(
                 "tasks_body.html",
                 task_number=str(task_number),
@@ -169,4 +172,8 @@ def submission_queue():
 
     result.append("</table></div>")
     html_source = "\n".join(result)
-    return render_template("header.html") + html_source + render_template("footer.html")
+    return (
+        render_template("header.html", page_title="Status")
+        + html_source
+        + render_template("footer.html")
+    )

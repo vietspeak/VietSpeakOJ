@@ -2,7 +2,7 @@ from re import sub
 from typing import List
 
 from slack_bolt import App
-from sqlalchemy import and_, select
+from sqlalchemy import and_, select, delete
 from sqlalchemy.orm import Session
 
 from config.config import CUTOFF_SCORE
@@ -83,8 +83,10 @@ def entry_point(app: App, session: Session, grader: LegacyGrader):
         feedback = grader.grader(submission.transcript, task.grading_transcript)
         submission.score = feedback.score
 
+        clear_word_errors_stmt = delete(WordError).where(WordError.submission_id == submission.id)
+        session.execute(clear_word_errors_stmt)
+        
         word_error_objs: List[WordError] = []
-
         for error in feedback.errors:
             word_error = WordError(
                 submission_id=submission.id, right_word=error[0], wrong_word=error[1]
