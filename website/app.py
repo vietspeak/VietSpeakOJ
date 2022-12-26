@@ -266,6 +266,7 @@ def logout():
     with Session(engine) as session:
         user: User = select(User).where(User.id == current_user.id)
         user.password = User.generate_password()
+        print(user)
         session.commit()
     logout_user()
     return redirect(url_for("home_page"))
