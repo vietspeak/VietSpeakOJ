@@ -6,7 +6,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 python3 -m venv env
 source env/bin/activate
 pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic pytz flake8 flask-login
-sudo apt-get install ffmpeg unzip
+sudo apt-get install ffmpeg unzip markdown
 mkdir database
 mkdir tmp
 python3 installer.py
@@ -42,7 +42,7 @@ alembic upgrade heads
 ## Deployment
 ```
 sudo ufw allow $PORT
-sudo ufw allow 443
+sudo ufw allow 5000
 gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
 gunicorn --bind 0.0.0.0:5000 wsgi2:app
 ```

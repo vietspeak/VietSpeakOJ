@@ -125,6 +125,37 @@ class Submission(Base):
         attrs = ["id", "source", "audio_file", "transcript"]
         return generate_repr(self, "Submission", attrs)
 
+    def generate_feedback_markdown(self) -> str:
+        if self.score is not None:
+            with Session(engine) as session:
+                task_stmt = select(Task).where(Task.id == self.task_id)
+                task: Task = session.scalar(task_stmt)
+
+                level_name = str(task.level).split(".")[-1]
+                level_name = level_name[0] + level_name[1:].lower()
+
+                result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n\n"
+                
+                word_errors_stmt = select(WordError).where(WordError.submission_id == self.id)
+                word_errors: List[WordError] = list(session.scalars(word_errors_stmt))
+
+                result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n\n"
+
+                if len(word_errors):
+                    error_msg = " | ".join(
+                        f"{error.right_word.lower()} -> `{error.wrong_word.lower() if error.wrong_word else '∅'}`"
+                        for error in word_errors
+                    )
+
+                    result += f"**{error_msg}**\n\n"
+                
+                result += "Đây là những gì mình nghe được từ bạn:\n\n"
+                result += self.transcript.lower() + "\n"
+                return result
+        
+        return ""
+            
+
 
 class Task(Base):
     __tablename__ = "tasks"
