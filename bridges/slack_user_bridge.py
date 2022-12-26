@@ -21,6 +21,7 @@ def entry_point(app: App, session: Session = None):
         cursor = None
         while True:
             response = app.client.users_list(cursor=cursor, limit=100)
+            time.sleep(4)
             if len(response["members"]) == 0:
                 break
             all_users.extend(response["members"])

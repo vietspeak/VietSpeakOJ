@@ -15,9 +15,10 @@ from flask_login import (
     login_required,
     logout_user,
 )
+import markdown
 
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
-from model.model import Submission, Task, TaskLevel, engine, User
+from model.model import HumanFeedback, Submission, Task, TaskLevel, engine, User
 from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
@@ -131,27 +132,31 @@ def tasks_page():
             if result:
                 for_login_user.append("""
                     <h2>Your Recent Submissions</h2>
-                    <table class="table">
-                        <tr>
-                            <th>#</th>
-                            <th>Score</th>
-                            <th>When</th>
-                        </tr>
+                    <div class="accordion" id="accordionSubmission">
                 """)
                 for sub in result:
                     sub: Submission
 
                     for_login_user.append(
                         f"""
-                        <tr>
-                            <td>{sub.id}</td>
-                            <td>{(sub.score * 100):.2f}</td>
-                            <td>{timezone_converter(str(sub.created_time))}</td>
-                        </tr>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="heading{sub.id}">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{sub.id}" aria-expanded="false" aria-controls="collapse{sub.id}">
+            {timezone_converter(str(sub.created_time))} ({(sub.score * 100):.2f}/100.00)
+        </button>
+        </h2>
+        <div id="collapse{sub.id}" class="accordion-collapse collapse" aria-labelledby="heading{sub.id}" data-bs-parent="#accordionSubmission">
+        <div class="accordion-body">
+            {markdown.markdown(sub.generate_feedback_markdown())}<br>
+
+        </div>
+        </div>
+    </div>
+
                     """
                     )
 
-                for_login_user.append("</table>")
+                for_login_user.append("</div>")
         for_login_user = "".join(for_login_user)
 
         return (

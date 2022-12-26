@@ -3,7 +3,7 @@ import enum
 import random
 import string
 from email.policy import default
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float,
                         ForeignKey, Integer, String, create_engine, select)
@@ -64,6 +64,7 @@ class User(Base, UserMixin):
     last_official_submission_timestamp = Column(TIMESTAMP)
     second_to_last_human_feedback_timestamp = Column(TIMESTAMP)
     is_eliminated = Column(Boolean, server_default="0", nullable=False)
+    display_name = Column(String)
 
     @classmethod
     def generate_password(cls, length: int = 10) -> str:
@@ -73,6 +74,7 @@ class User(Base, UserMixin):
     def from_dict(cls, user: Dict[str, Any]) -> User:
         user_id = user.get("id")
         user_email = user["profile"].get("email")
+        display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
         is_bot = user.get("is_bot", False)
         is_owner = user.get("is_owner", False)
         is_admin = user.get("is_admin", False)
@@ -84,6 +86,7 @@ class User(Base, UserMixin):
             is_bot=is_bot,
             is_owner=is_owner,
             is_admin=is_admin,
+            display_name=display_name
         )
     
     @classmethod
@@ -97,7 +100,7 @@ class User(Base, UserMixin):
         self.is_bot = user.get("is_bot", False)
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
-
+        self.display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
 
 class WordError(Base):
     __tablename__ = "word_errors"
@@ -124,6 +127,43 @@ class Submission(Base):
     def __repr__(self):
         attrs = ["id", "source", "audio_file", "transcript"]
         return generate_repr(self, "Submission", attrs)
+
+    def generate_feedback_markdown(self) -> str:
+        if self.score is not None:
+            with Session(engine) as session:
+                task_stmt = select(Task).where(Task.id == self.task_id)
+                task: Task = session.scalar(task_stmt)
+
+                level_name = str(task.level).split(".")[-1]
+                level_name = level_name[0] + level_name[1:].lower()
+
+                result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n\n"
+                
+                word_errors_stmt = select(WordError).where(WordError.submission_id == self.id)
+                word_errors: List[WordError] = list(session.scalars(word_errors_stmt))
+
+                result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n\n"
+
+                if len(word_errors):
+                    error_msg = " | ".join(
+                        f"{error.right_word.lower()} -> `{error.wrong_word.lower() if error.wrong_word else '∅'}`"
+                        for error in word_errors
+                    )
+
+                    result += f"**{error_msg}**\n\n"
+                
+                result += "Đây là những gì mình nghe được từ bạn:\n\n"
+                result += self.transcript.lower() + "\n\n"
+
+                human_feedback_stmt = select(HumanFeedback).where(HumanFeedback.submission_id == self.id)
+                human_feedback: Iterable[HumanFeedback] = session.scalars(human_feedback_stmt)
+                for feedback in human_feedback:
+                    result += feedback.generate_feedback_markdown() + "\n\n"
+                
+                return result
+        
+        return ""
+            
 
 
 class Task(Base):
@@ -163,5 +203,12 @@ class HumanFeedback(Base):
         attrs = ["id", "submission_id", "user_id", "content", "created_time"]
         return generate_repr(self, "Task", attrs)
 
+    def generate_feedback_markdown(self):
+        with Session(engine) as session:
+            user_stmt = select(User).where(User.id == self.user_id)
+            user: User = session.scalar(user_stmt)
+            if user and not user.is_bot:
+                return f"{user.display_name}: {self.content}"
+        return ""
 
 Base.metadata.create_all(engine)
