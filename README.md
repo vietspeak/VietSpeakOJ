@@ -5,7 +5,7 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 python3 -m venv env
 source env/bin/activate
-pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic pytz flake8
+pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic pytz flake8 flask-login
 sudo apt-get install ffmpeg unzip
 mkdir database
 mkdir tmp
@@ -18,6 +18,7 @@ export SLACK_BOT_TOKEN=<your Slack bot token>
 export SLACK_BOT_USER_TOKEN=<your Slack user token>
 export SLACK_SIGNING_SECRET=<your Slack signing secret>
 export PORT=<port>
+export SECRET_KEY=<secret_key>
 export ADMIN_PORT=<admin_port>
 export USER_PORT=<user_port>
 ```

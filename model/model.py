@@ -1,3 +1,4 @@
+from __future__ import annotations
 import enum
 import random
 import string
@@ -5,11 +6,13 @@ from email.policy import default
 from typing import Any, Dict, List
 
 from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float,
-                        ForeignKey, Integer, String, create_engine)
-from sqlalchemy.orm import declarative_base
+                        ForeignKey, Integer, String, create_engine, select)
+from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.sql import func
 
 from config.config import PATH_TO_DATABASE
+
+from flask_login import UserMixin
 
 engine = create_engine(f"sqlite:///{PATH_TO_DATABASE}", echo=True, future=True)
 Base = declarative_base()
@@ -47,7 +50,7 @@ class TaskLevel(enum.Enum):
     RED = 3
 
 
-class User(Base):
+class User(Base, UserMixin):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -67,7 +70,7 @@ class User(Base):
         return "".join(random.choice(string.ascii_letters) for _ in range(length))
 
     @classmethod
-    def from_dict(cls, user: Dict[str, Any]) -> "User":
+    def from_dict(cls, user: Dict[str, Any]) -> User:
         user_id = user.get("id")
         user_email = user["profile"].get("email")
         is_bot = user.get("is_bot", False)
@@ -82,6 +85,12 @@ class User(Base):
             is_owner=is_owner,
             is_admin=is_admin,
         )
+    
+    @classmethod
+    def get(cls, user_id: str) -> User:
+        with Session(engine) as session:
+            user_stmt = select(User).where(User.id == int(user_id))
+            return session.scalar(user_stmt)
 
     def update_from_dict(self, user: Dict[str, Any]):
         self.email = user["profile"].get("email")

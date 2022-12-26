@@ -10,7 +10,7 @@ from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
 from bridges.submission_task_bridge import send_cache_feedback
-from config.config import MANDATORY_CHANNEL
+from config.config import BOT_CHANNEL, HOME_ADDRESS, MANDATORY_CHANNEL
 from model.model import FileSource, HumanFeedback, Submission, User, engine
 
 # Initializes your app with your bot token and signing secret
@@ -97,7 +97,7 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
     if (
         "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL
-    ):  # is a feedback
+    ):
         parent_message = app.client.conversations_history(
             channel=MANDATORY_CHANNEL,
             inclusive=True,
@@ -133,7 +133,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
                 session.commit()
     
-    if event.get("channel") != MANDATORY_CHANNEL:
+    if event.get("channel") not in [MANDATORY_CHANNEL, BOT_CHANNEL]:
         with Session(engine) as session:
             find_real_user_id = select(User).where(
                 User.slack_id == event.get("user")
@@ -145,6 +145,24 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 user_app.client.chat_delete(channel = event.get("channel"), ts=event.get("ts"), as_user=True)
                 app.client.chat_postMessage(channel = user.slack_id, text="""Bạn đã bị loại khỏi VietSpeak do không nộp bài hoặc không nhận xét bài đầy đủ cho các thành viên.\nĐể kích hoạt tài khoản trở lại, hãy nộp bài tại kênh <#C01BY57F29H> và nhận xét cho hai bài đăng liền kề.\nLiên hệ admin <@U01C3SM1RRA> để khiếu nại nếu bạn nghĩ việc bạn bị loại là nhầm lẫn.\nBot xin gửi lại tin nhắn bạn vừa nhắn.\n""")
                 app.client.chat_postMessage(channel = user.slack_id, text=saved_text)
+                return
+
+    # function that needs user to be active
+    if event.get("text").strip().lower() == "login":
+        with Session(engine) as session:
+            find_real_user_id = select(User).where(
+                User.slack_id == event.get("user")
+            )
+            user: User = next(session.scalars(find_real_user_id), None)
+            
+            if user:
+                app.client.chat_postMessage(channel=user.slack_id, text=f"{HOME_ADDRESS}login?id={user.id}&password={user.password}")
+    
+
+
+    
+
+    
                 
 
 
