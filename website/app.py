@@ -113,17 +113,8 @@ def tasks_page():
         task_link = task_info.audio_link if task_info and task_info.audio_link else ""
         task_title = task_info.title if task_info and task_info.title else ""
 
-        for_login_user = [
-            """
-            <h2>Your Recent Submissions</h2>
-            <table class="table">
-                <tr>
-                    <th>#</th>
-                    <th>Score</th>
-                    <th>When</th>
-                </tr>
-        """
-        ]
+        for_login_user = []
+
         if current_user.is_authenticated:
             submission_stmt = (
                 select(Submission)
@@ -137,20 +128,30 @@ def tasks_page():
                 .limit(5)
             )
             result = session.scalars(submission_stmt)
-            for sub in session.scalars(submission_stmt):
-                sub: Submission
+            if result:
+                for_login_user.append("""
+                    <h2>Your Recent Submissions</h2>
+                    <table class="table">
+                        <tr>
+                            <th>#</th>
+                            <th>Score</th>
+                            <th>When</th>
+                        </tr>
+                """)
+                for sub in result:
+                    sub: Submission
 
-                for_login_user.append(
-                    f"""
-                    <tr>
-                        <td>{sub.id}</td>
-                        <td>{(sub.score * 100):.2f}</td>
-                        <td>{timezone_converter(str(sub.created_time))}</td>
-                    </tr>
-                """
-                )
+                    for_login_user.append(
+                        f"""
+                        <tr>
+                            <td>{sub.id}</td>
+                            <td>{(sub.score * 100):.2f}</td>
+                            <td>{timezone_converter(str(sub.created_time))}</td>
+                        </tr>
+                    """
+                    )
 
-        for_login_user.append("</table>")
+                for_login_user.append("</table>")
         for_login_user = "".join(for_login_user)
 
         return (
