@@ -264,10 +264,9 @@ def login():
 @login_required
 def logout():
     with Session(engine) as session:
-        print(current_user, current_user.id)
-        user: User = select(User).where(User.id == current_user.id)
+        user_stmt: User = select(User).where(User.id == current_user.id)
+        user: User = session.scalar(user_stmt)
         user.password = User.generate_password()
-        print(user)
         session.commit()
     logout_user()
     return redirect(url_for("home_page"))
