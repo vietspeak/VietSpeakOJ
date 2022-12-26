@@ -147,6 +147,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 app.client.chat_postMessage(channel = user.slack_id, text=saved_text)
                 return
 
+    print(event.get("text"))
     # function that needs user to be active
     if event.get("text").strip().lower() == "login":
         with Session(engine) as session:
