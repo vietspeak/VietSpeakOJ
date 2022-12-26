@@ -95,6 +95,9 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 
 @app.event({"type": "message"})
 def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
+
+    print(event)
+    
     if (
         "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL
     ):
@@ -133,7 +136,6 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
                 session.commit()
     
-    print(event.get("text"))
     
     if event.get("channel") not in [MANDATORY_CHANNEL, BOT_CHANNEL]:
         with Session(engine) as session:
@@ -149,7 +151,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 app.client.chat_postMessage(channel = user.slack_id, text=saved_text)
                 return
 
-    print(event.get("text"))
+    
     # function that needs user to be active
     if event.get("text").strip().lower() == "login":
         with Session(engine) as session:
