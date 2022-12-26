@@ -1,17 +1,38 @@
 import datetime
 import io
 from typing import List
+import os
 
 import pytz
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session, redirect, url_for
 from sqlalchemy import desc, select, and_
 from sqlalchemy.orm import Session
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    current_user,
+    login_required,
+    logout_user,
+)
 
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
-from model.model import Submission, Task, TaskLevel, engine
+from model.model import Submission, Task, TaskLevel, engine, User
 from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
+app.secret_key = bytes(
+    os.environ.get("SECRET_KEY", '_5#y2L"F4Q8z\n\xec]/'), encoding="utf-8"
+)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id: str):
+    return User.get(user_id)
+
 
 BUTTON_MAP = {
     TaskLevel.YELLOW: "warning",
@@ -83,7 +104,6 @@ def tasks_page():
             and_(Task.task_number == task_number, Task.level == task_level)
         )
         task_info: Task = session.scalar(task_stmt)
-        print(task_info)
 
         task_transcript = (
             "".join(f"<p>{x}</p>" for x in task_info.sample_transcript.split("\n"))
@@ -92,6 +112,47 @@ def tasks_page():
         )
         task_link = task_info.audio_link if task_info and task_info.audio_link else ""
         task_title = task_info.title if task_info and task_info.title else ""
+
+        for_login_user = [
+            """
+            <h2>Your Recent Submissions</h2>
+            <table class="table">
+                <tr>
+                    <th>#</th>
+                    <th>Score</th>
+                    <th>When</th>
+                </tr>
+        """
+        ]
+        if current_user.is_authenticated:
+            submission_stmt = (
+                select(Submission)
+                .where(
+                    and_(
+                        Submission.user_id == current_user.id,
+                        Submission.task_id == task_info.id,
+                    )
+                )
+                .order_by(desc(Submission.id))
+                .limit(5)
+            )
+            result = session.scalars(submission_stmt)
+            for sub in session.scalars(submission_stmt):
+                sub: Submission
+
+                for_login_user.append(
+                    f"""
+                    <tr>
+                        <td>{sub.id}</td>
+                        <td>{(sub.score * 100):.2f}</td>
+                        <td>{timezone_converter(str(sub.created_time))}</td>
+                    </tr>
+                """
+                )
+
+        for_login_user.append("</table>")
+        for_login_user = "".join(for_login_user)
+
         return (
             render_template(
                 "header.html",
@@ -106,6 +167,7 @@ def tasks_page():
                 task_link=task_link,
                 task_transcript=task_transcript,
                 task_title=task_title,
+                for_login_user=for_login_user,
             )
             + render_template("footer.html")
         )
@@ -177,3 +239,31 @@ def submission_queue():
         + html_source
         + render_template("footer.html")
     )
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    user_id = int(request.values.get("id", 0))
+    password = request.values.get("password", "")
+
+    with Session(engine) as session:
+        user_stmt = select(User).where(
+            and_(
+                User.id == user_id,
+                and_(User.password == password, User.is_eliminated == False),
+            )
+        )
+        user: User = session.scalar(user_stmt)
+        if user:
+            login_user(user)
+            user.password = User.generate_password()
+            session.commit()
+
+    return redirect(url_for("home_page"))
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("home_page"))
