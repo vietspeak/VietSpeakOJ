@@ -256,8 +256,6 @@ def login():
         user: User = session.scalar(user_stmt)
         if user:
             login_user(user)
-            user.password = User.generate_password()
-            session.commit()
 
     return redirect(url_for("home_page"))
 
