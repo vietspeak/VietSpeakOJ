@@ -96,8 +96,6 @@ def file_shared_handler(event: Optional[Dict[str, Any]], say: Say):
 @app.event({"type": "message"})
 def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
-    print(event)
-    
     if (
         "thread_ts" in event and event.get("channel") == MANDATORY_CHANNEL
     ):
@@ -153,7 +151,7 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
     
     # function that needs user to be active
-    if event.get("text").strip().lower() == "login":
+    if event.get("text", "").strip().lower() == "login":
         with Session(engine) as session:
             find_real_user_id = select(User).where(
                 User.slack_id == event.get("user")
