@@ -133,6 +133,8 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
 
                 session.commit()
     
+    print(event.get("text"))
+    
     if event.get("channel") not in [MANDATORY_CHANNEL, BOT_CHANNEL]:
         with Session(engine) as session:
             find_real_user_id = select(User).where(
