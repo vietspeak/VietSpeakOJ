@@ -74,7 +74,7 @@ class User(Base, UserMixin):
     def from_dict(cls, user: Dict[str, Any]) -> User:
         user_id = user.get("id")
         user_email = user["profile"].get("email")
-        display_name = user["profile"].get("display_name", user.get("real_name", user.get("name")))
+        display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
         is_bot = user.get("is_bot", False)
         is_owner = user.get("is_owner", False)
         is_admin = user.get("is_admin", False)
@@ -100,7 +100,7 @@ class User(Base, UserMixin):
         self.is_bot = user.get("is_bot", False)
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
-        self.display_name = user["profile"].get("display_name", user.get("real_name", user.get("name")))
+        self.display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
 
 class WordError(Base):
     __tablename__ = "word_errors"
