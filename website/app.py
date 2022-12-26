@@ -264,7 +264,8 @@ def login():
 @login_required
 def logout():
     with Session(engine) as session:
-        user: User = select(User).where(User.id == int(current_user.get_id()))
+        print(current_user, current_user.id)
+        user: User = select(User).where(User.id == current_user.id)
         user.password = User.generate_password()
         print(user)
         session.commit()
