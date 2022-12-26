@@ -157,10 +157,10 @@ def a_likely_feedback_is_posted(event: Optional[Dict[str, Any]], say: Say):
                 User.slack_id == event.get("user")
             )
             user: User = next(session.scalars(find_real_user_id), None)
-            
             if user:
+                user.password = User.generate_password()
+                session.commit()
                 app.client.chat_postMessage(channel=user.slack_id, text=f"{HOME_ADDRESS}login?id={user.id}&password={user.password}")
-    
 
 
     

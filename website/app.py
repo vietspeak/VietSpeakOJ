@@ -256,8 +256,6 @@ def login():
         user: User = session.scalar(user_stmt)
         if user:
             login_user(user)
-            user.password = User.generate_password()
-            session.commit()
 
     return redirect(url_for("home_page"))
 
@@ -265,5 +263,10 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    with Session(engine) as session:
+        user_stmt: User = select(User).where(User.id == current_user.id)
+        user: User = session.scalar(user_stmt)
+        user.password = User.generate_password()
+        session.commit()
     logout_user()
     return redirect(url_for("home_page"))
