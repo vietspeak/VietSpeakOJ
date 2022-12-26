@@ -263,5 +263,8 @@ def login():
 @app.route("/logout")
 @login_required
 def logout():
+    with Session(engine) as session:
+        current_user.password = User.generate_password()
+        session.commit()
     logout_user()
     return redirect(url_for("home_page"))
