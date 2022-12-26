@@ -3,7 +3,7 @@ import enum
 import random
 import string
 from email.policy import default
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 
 from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float,
                         ForeignKey, Integer, String, create_engine, select)
@@ -64,6 +64,7 @@ class User(Base, UserMixin):
     last_official_submission_timestamp = Column(TIMESTAMP)
     second_to_last_human_feedback_timestamp = Column(TIMESTAMP)
     is_eliminated = Column(Boolean, server_default="0", nullable=False)
+    display_name = Column(String)
 
     @classmethod
     def generate_password(cls, length: int = 10) -> str:
@@ -73,6 +74,7 @@ class User(Base, UserMixin):
     def from_dict(cls, user: Dict[str, Any]) -> User:
         user_id = user.get("id")
         user_email = user["profile"].get("email")
+        display_name = user["profile"].get("display_name")
         is_bot = user.get("is_bot", False)
         is_owner = user.get("is_owner", False)
         is_admin = user.get("is_admin", False)
@@ -84,6 +86,7 @@ class User(Base, UserMixin):
             is_bot=is_bot,
             is_owner=is_owner,
             is_admin=is_admin,
+            display_name=display_name
         )
     
     @classmethod
@@ -97,6 +100,7 @@ class User(Base, UserMixin):
         self.is_bot = user.get("is_bot", False)
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
+        self.display_name = user["profile"].get("display_name")
 
 
 class WordError(Base):
@@ -150,7 +154,13 @@ class Submission(Base):
                     result += f"**{error_msg}**\n\n"
                 
                 result += "Đây là những gì mình nghe được từ bạn:\n\n"
-                result += self.transcript.lower() + "\n"
+                result += self.transcript.lower() + "\n\n"
+
+                human_feedback_stmt = select(HumanFeedback).where(HumanFeedback.submission_id == self.id)
+                human_feedback: Iterable[HumanFeedback] = session.scalars(human_feedback_stmt)
+                for feedback in human_feedback:
+                    result += feedback.generate_feedback_markdown() + "\n\n"
+                
                 return result
         
         return ""
@@ -194,5 +204,12 @@ class HumanFeedback(Base):
         attrs = ["id", "submission_id", "user_id", "content", "created_time"]
         return generate_repr(self, "Task", attrs)
 
+    def generate_feedback_markdown(self):
+        with Session(engine) as session:
+            user_stmt = select(User).where(User.id == self.user_id)
+            user: User = session.scalar(user_stmt)
+            if user and not user.is_bot:
+                return f"{user.display_name}: {self.content}"
+        return ""
 
 Base.metadata.create_all(engine)

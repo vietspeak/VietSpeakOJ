@@ -18,7 +18,7 @@ from flask_login import (
 import markdown
 
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
-from model.model import Submission, Task, TaskLevel, engine, User
+from model.model import HumanFeedback, Submission, Task, TaskLevel, engine, User
 from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
@@ -147,7 +147,8 @@ def tasks_page():
         </h2>
         <div id="collapse{sub.id}" class="accordion-collapse collapse" aria-labelledby="heading{sub.id}" data-bs-parent="#accordionSubmission">
         <div class="accordion-body">
-            {markdown.markdown(sub.generate_feedback_markdown())}
+            {markdown.markdown(sub.generate_feedback_markdown())}<br>
+
         </div>
         </div>
     </div>
