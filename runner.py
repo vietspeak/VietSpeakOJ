@@ -1,3 +1,4 @@
+from sqlite3 import OperationalError
 import time
 import os
 from sqlalchemy.orm import Session
@@ -11,7 +12,7 @@ from bridges import (
     submission_timestamp_bridge,
     human_feedback_timestamp_bridge,
     user_elimination,
-    user_reactivation
+    user_reactivation,
 )
 from grader.grading_transcript import GradingTranscript, LegacyGrader
 from model.model import engine
@@ -30,25 +31,27 @@ FETCH_COUNTER = FETCH_USER_INTERVAL // SLEEP_INTERVAL
 
 counter = 0
 while True:
-    with Session(engine) as session:
-        dictionary = Dictionary(session)
-        grading_transcript_producer = GradingTranscript(dictionary)
-        task_determiner = TaskDeterminer(session)
-        grader = LegacyGrader(dictionary)
-        if counter == 0:
-            slack_user_bridge.entry_point(app, session)
-        counter += 1
-        if counter == FETCH_COUNTER:
-            counter = 0
+    try:
+        with Session(engine) as session:
+            dictionary = Dictionary(session)
+            grading_transcript_producer = GradingTranscript(dictionary)
+            task_determiner = TaskDeterminer(session)
+            grader = LegacyGrader(dictionary)
+            if counter == 0:
+                slack_user_bridge.entry_point(app, session)
+            counter += 1
+            if counter == FETCH_COUNTER:
+                counter = 0
 
-        task_audio_bridge.entry_point(session, grading_transcript_producer)
-        submission_audio_bridge.entry_point(session)
-        submission_transcript_bridge.entry_point(session, task_determiner)
-        submission_task_bridge.entry_point(app, session, grader)
+            task_audio_bridge.entry_point(session, grading_transcript_producer)
+            submission_audio_bridge.entry_point(session)
+            submission_transcript_bridge.entry_point(session, task_determiner)
+            submission_task_bridge.entry_point(app, session, grader)
+            submission_timestamp_bridge.entry_point(session)
+            human_feedback_timestamp_bridge.entry_point(session)
+            user_elimination.entry_point(session)
+            user_reactivation.entry_point(session)
+    except OperationalError:
+        print("Database is locked")
 
-
-        submission_timestamp_bridge.entry_point(session)
-        human_feedback_timestamp_bridge.entry_point(session)
-        user_elimination.entry_point(session)
-        user_reactivation.entry_point(session)
-        time.sleep(SLEEP_INTERVAL)
+    time.sleep(SLEEP_INTERVAL)
