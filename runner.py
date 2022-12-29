@@ -52,6 +52,6 @@ while True:
             user_elimination.entry_point(session)
             user_reactivation.entry_point(session)
     except OperationalError:
-        print("Database is locked")
+        print("Database is locked. Data are not updated")
 
     time.sleep(SLEEP_INTERVAL)

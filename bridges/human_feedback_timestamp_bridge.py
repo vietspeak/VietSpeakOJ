@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Tuple
 
-from sqlalchemy import update
+from sqlalchemy import update, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
@@ -30,14 +30,11 @@ def entry_point(session: Session):
     result: List[Tuple[int, str]] = session.execute(feedback_stmt)
     for row in result:
         user_id, timestamp = row
-        update_stmt = (
-            update(User)
-            .where(User.id == user_id)
-            .values(
-                second_to_last_human_feedback_timestamp=datetime.strptime(
+        user_stmt = select(User).where(User.id == user_id)
+        user_obj: User = session.scalar(user_stmt)
+        new_timestamp = datetime.strptime(
                     timestamp, FORMAT
                 )
-            )
-        )
-        session.execute(update_stmt)
+        if user_obj and user_obj.second_to_last_human_feedback_timestamp != new_timestamp:
+            user_obj.second_to_last_human_feedback_timestamp=new_timestamp
     session.commit()
