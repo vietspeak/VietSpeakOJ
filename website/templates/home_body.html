@@ -32,12 +32,70 @@
     </p>
     <p>
     Nếu bạn thấy nhóm sẽ hữu ích cho bản thân và quyết tâm theo học
-    cùng nhóm thì hãy đăng kí tại
-    <a href="https://register.vietspeak.org">https://register.vietspeak.org</a>
+    cùng nhóm thì hãy điền đơn đăng kí dưới đây
     </p>
-    <p>
-    Sau khi đăng kí xong, các bạn có thể kiểm tra trạng thái xét duyệt
-    đơn đăng kí của mình ở
-    <a href="https://status.vietspeak.org/">https://status.vietspeak.org/</a>
-    </p>
+    <h2>Đơn đăng kí</h2>
+    <form action="/register" method="post">
+        <div class="mb-3 col-md-4">
+          <label for="email">Địa chỉ email</label>
+          <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
+        </div>
+        <div class="mb-3">Việc đầu tiên bạn cần làm khi vào nhóm là đăng một bài giới thiệu bản thân trên <a type="button" class="btn btn-primary btn-sm" href="https://tvevoices4all-group.slack.com/archives/C01DJ8VJ0TZ" target="_blank">#07-new-member-introduction</a></div>
+        <div class="mb-3 form-check">
+          <label for="question_1">Đồng ý làm điều này</label>
+          <input class="form-check-input" type="checkbox" value=1 id="question_1" name="question_1">
+        </div>
+        <p></p>
+        <div class="mb-3">
+            <label for="question_2">VietSpeak chia bài tập luyện speaking (thu âm) thành bao nhiêu cấp độ cho thành viên luyện tập? Trả lời bằng số.</label> 
+            <div class="col-md-2"><input type="number" class="form-control" id="question_2" name="question_2"></div>
+        </div>
+        <div class="mb-3">
+            <label for="question_3">Hầu hết các task ở VietSpeak dài bao nhiêu ngày? Trả lời bằng số.</label> 
+            <div class="col-md-2"><input type="number" class="form-control" id="question_3" name="question_3"></div>
+        </div>
+        <div class="mb-3">
+            <label for="question_4">Mỗi người bắt buộc phải nộp bao nhiều bài thu mỗi task nếu không muốn bị loại khỏi nhóm? Trả lời bằng số.</label>
+            <div class="col-md-2"><input type="number" class="form-control" id="question_4" name="question_4"></div>
+        </div>
+        <label for="question_567">Bạn sẽ nộp bài thu âm bắt buộc tại đâu? (Xem task <a type="button" class="btn btn-warning" href="/tasks?number=97&level=Yellow">YELLOW 97</a> của VietSpeak để có câu trả lời)</label>
+        <div class="mb-3" id="question_567">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="question_5" name="question_5" value=1>
+                <label class="form-check-label" for="question_5"><a type="button" class="btn btn-primary btn-sm" href="https://tvevoices4all-group.slack.com/archives/C01BY57F29H" target="_blank">#02-audios-posted</a></label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="question_6" name="question_6" value=1>
+                <label class="form-check-label" for="question_6"><a type="button" class="btn btn-primary btn-sm" href="https://tvevoices4all-group.slack.com/archives/D048NSF657C" target="_blank">VietSpeak OJ</a></label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" id="question_7" name="question_7" value=1>
+                <label class="form-check-label" for="question_7">Trên website này</label>
+            </div>
+        </div>
+        <div>
+            <p>Bạn có đồng ý với các quy tắc ứng xử dưới đây của VietSpeak không?</p>
+
+            <p>Các quy tắc ứng xử của VietSpeak (Cập nhật 10/01/2022)</p>
+            <ul>
+                <li>Không thảo luận các nội dung không phù hợp, không có ích cho phần lớn các thành viên: chính trị, tôn giáo, vũ khí đạn dược, giới tính, buôn lậu...</li>
+                <li>Không đả kích, khích bác, coi thường, khinh bỉ các thành viên khác trong nhóm. Không sử dụng các từ ngữ thô lậu. Không sử dụng các cách hành văn, hình ảnh mang tính thô lậu. Không khí thân thiện và tử tế của Việt Speak cần được bảo vệ.</li>
+                <li>Không quảng cáo.</li>
+                <li>Mọi người đều bình đẳng, ngoại trừ việc các admin có quyền và trách nhiệm xử lí các trường hợp vi phạm 3 điều trên. Tất cả các trường hợp xử lý đều được công khai, nhưng có thể sẽ không báo trước.</li>
+            </ul>
+        </div>
+        <div class="form-check mb-3">
+            <label for="question_8">Tôi đồng ý với các quy tắc ứng xử trên.</label>
+            <input class="form-check-input" type="checkbox" value=1 id="question_8" name="question_8">
+        </div>
+        <div class="mb-3">VietSpeak sẽ dùng các thông tin sau để nâng cao chất lượng hoạt động của nhóm. Bạn không nhất thiết phải trả lời.</div>
+        <div class="mb-3">
+            Bạn hiện đang sống ở thành phố nào? Nếu bạn hiện không sống ở Việt Nam, hãy thêm tên bang (nếu có) và quốc gia bạn đang sinh sống.
+            <div class="col-md-2"><input type="text" class="form-control" id="question_9"></div>
+        </div>
+        <div class="mb-3">
+            Cảm ơn bạn đã điền đơn đăng kí tham gia VietSpeak.
+        </div>
+        <input type="submit" class="btn btn-primary" value="Đăng kí" name="submit"/>
+    </form>
 </div>

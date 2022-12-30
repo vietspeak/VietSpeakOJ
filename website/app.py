@@ -1,29 +1,36 @@
-import datetime
-import io
 from typing import List
 import os
 
-import pytz
-from flask import Flask, render_template, request, session, redirect, url_for
-from sqlalchemy import desc, select, and_
+from flask import Flask, render_template, request, redirect, url_for
+from sqlalchemy import desc, select, and_, or_
 from sqlalchemy.orm import Session
 from flask_login import (
     LoginManager,
-    UserMixin,
     login_user,
     current_user,
     login_required,
     logout_user,
 )
 import markdown
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+from slack.app import app as slack_app
 
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
-from model.model import HumanFeedback, Submission, Task, TaskLevel, engine, User
+from model.model import Submission, Task, TaskLevel, UserInfo, engine, User
 from utils.timezone_converter import timezone_converter
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = bytes(
     os.environ.get("SECRET_KEY", '_5#y2L"F4Q8z\n\xec]/'), encoding="utf-8"
+)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    storage_uri="memcached://localhost:11211",
+    storage_options={},
 )
 
 login_manager = LoginManager()
@@ -130,10 +137,12 @@ def tasks_page():
             )
             result = session.scalars(submission_stmt)
             if result:
-                for_login_user.append("""
+                for_login_user.append(
+                    """
                     <h2>Your Recent Submissions</h2>
                     <div class="accordion" id="accordionSubmission">
-                """)
+                """
+                )
                 for sub in result:
                     sub: Submission
 
@@ -264,6 +273,50 @@ def login():
             login_user(user)
 
     return redirect(url_for("home_page"))
+
+
+@app.route("/register", methods=["POST"])
+@limiter.limit("10 per day")
+def register():
+    answers = [
+        int((request.values.get(f"question_{i}") or "0").strip()) for i in range(1, 9)
+    ]
+    print(answers)
+    if answers == [1, 4, 10, 1, 1, 0, 0, 1]:
+        email = request.values.get("email", "")
+
+        with Session(engine) as session:
+            user_stmt = select(User).where(User.email == email)
+            user_obj = session.scalar(user_stmt)
+
+            if user_obj:
+                return f"{email} đã được dùng để đăng kí một tài khoản nào đó. Bạn có thể sử dụng chức năng quên mật khẩu của Slack để tìm lại tài khoản này."
+
+            user_info_stmt = select(UserInfo).where(UserInfo.email == email)
+            user_info_obj = session.scalar(user_info_stmt)
+
+            if user_info_obj:
+                return f"Tài khoản {email} đang chờ để phê duyệt."
+
+            admin_stmt = select(User).where(or_(User.is_admin, User.is_owner))
+            admins = session.scalars(admin_stmt)
+
+            for admin in admins:
+                admin: User
+                slack_app.client.chat_postMessage(
+                    text=f"{email} đã điền thành công đơn đăng kí.",
+                    channel=admin.slack_id,
+                )
+
+            location = request.values.get("question_9")
+            user_info = UserInfo(email=email, location=location)
+
+            session.add(user_info)
+            session.commit()
+
+        return f"Bạn đã trả lời chính xác các câu hỏi. Trong vòng 12 tiếng tới, một thư mời tham gia nhóm Slack sẽ được gửi đến {email}."
+
+    return "Bạn chưa trả lời chính xác các câu hỏi."
 
 
 @app.route("/logout")

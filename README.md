@@ -5,8 +5,8 @@ A module that gives pronunciation score based on the audio transcript produced b
 ```
 python3 -m venv env
 source env/bin/activate
-pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic pytz flake8 flask-login
-sudo apt-get install ffmpeg unzip markdown
+pip3 install black isort pytest pytest-cov sqlalchemy wheel gunicorn flask vosk slack_bolt scikit-learn aiohttp alembic pytz flake8 flask-login Flask-Limiter pymemcache markdown
+sudo apt-get install ffmpeg unzip memcached
 mkdir database
 mkdir tmp
 python3 installer.py

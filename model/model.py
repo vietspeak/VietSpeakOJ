@@ -211,4 +211,13 @@ class HumanFeedback(Base):
                 return f"{user.display_name}: {self.content}"
         return ""
 
+
+class UserInfo(Base):
+    __tablename__ = "user_info"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String)
+    location = Column(String)
+
+
 Base.metadata.create_all(engine)
