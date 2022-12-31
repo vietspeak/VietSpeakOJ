@@ -329,3 +329,12 @@ def logout():
         session.commit()
     logout_user()
     return redirect(url_for("home_page"))
+
+
+@app.route("/syllabus")
+def syllabus():
+    return (
+        render_template("header.html", page_title="Syllabus")
+        + render_template("syllabus_body.html")
+        + render_template("footer.html")
+    )
