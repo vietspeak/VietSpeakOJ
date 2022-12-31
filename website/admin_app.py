@@ -201,4 +201,4 @@ def regrade_submissions():
 
     result.append("</table>")
     html_source = "\n".join(result)
-    return render_template("header.html") + html_source + render_template("footer.html")
+    return html_source
