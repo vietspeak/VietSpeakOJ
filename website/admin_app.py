@@ -5,7 +5,7 @@ from flask import Flask, flash, redirect, render_template, request
 from sqlalchemy import desc, select
 from sqlalchemy.orm import Session
 
-from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
+from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE_FOR_ADMIN
 from model.model import FileSource, Submission, Task, TaskLevel, User, engine
 from utils.timezone_converter import timezone_converter
 
@@ -161,7 +161,7 @@ def regrade_submissions():
             select(Submission)
             .where(Submission.source == FileSource.SLACK)
             .order_by(desc(Submission.id))
-            .limit(MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE)
+            .limit(MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE_FOR_ADMIN)
         )
         rows: List[Submission] = list(session.scalars(find_submission_stmt))
         for submission in rows:
