@@ -135,7 +135,6 @@ def regrade_submissions():
             stmt = select(Submission).where(Submission.id == submission_id)
             submission: Submission = session.scalar(stmt)
             if submission:
-                submission.transcript = None
                 submission.task_id = None
                 submission.score = None
             session.commit()
