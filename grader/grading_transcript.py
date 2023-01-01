@@ -50,30 +50,44 @@ class LegacyGrader:
 
     @classmethod
     def matchable(cls, a: List[CMUPronunciation], b: List[CMUPronunciation]) -> bool:
-        return bool(cls.find_first_matching_pronunciation(a,b))
+        return bool(cls.find_first_matching_pronunciation(a, b))
 
     @classmethod
-    def find_first_matching_pronunciation(cls, a: List[CMUPronunciation], b: List[CMUPronunciation]) -> CMUPronunciation:
+    def find_first_matching_pronunciation(
+        cls, a: List[CMUPronunciation], b: List[CMUPronunciation]
+    ) -> CMUPronunciation:
         arpa_1: List[str] = [x.arpabet for x in a]
         arpa_2: Set[str] = set(x.arpabet for x in b)
         for x in arpa_1:
             if x in arpa_2:
                 return x
-        
+
         return None
 
     @classmethod
-    def add_sound_to_matches(cls, pronunciation_matches: List[Tuple[str, str]], sound_grader : str, sound_student: Optional[str] = None):
-        list_x = [sound_grader[:-1], sound_grader[-1]] if "0"<=sound_grader[-1]<="9" else [sound_grader]
+    def add_sound_to_matches(
+        cls,
+        pronunciation_matches: List[Tuple[str, str]],
+        sound_grader: str,
+        sound_student: Optional[str] = None,
+    ):
+        list_x = (
+            [sound_grader[:-1], sound_grader[-1]]
+            if "0" <= sound_grader[-1] <= "9"
+            else [sound_grader]
+        )
 
         if sound_student:
-            list_y = [sound_student[:-1], sound_student[-1]] if "0"<=sound_student[-1]<="9" else [sound_student, None]
+            list_y = (
+                [sound_student[:-1], sound_student[-1]]
+                if "0" <= sound_student[-1] <= "9"
+                else [sound_student, None]
+            )
         else:
             list_y = [None, None]
 
         for i in range(len(list_x)):
             pronunciation_matches.append((list_x[i], list_y[i]))
-        
 
     def grader(self, student_script: str, grading_script: str) -> Feedback:
 
@@ -92,13 +106,17 @@ class LegacyGrader:
         for location in common.locations:
             total_matches_length += grading_lengths[location[1]]
 
-            matching_pronunciation : List[str] = self.find_first_matching_pronunciation(student_arpabet[location[0]], grading_arpabet[location[1]]).split(" ")
+            matching_pronunciation: List[str] = self.find_first_matching_pronunciation(
+                student_arpabet[location[0]], grading_arpabet[location[1]]
+            ).split(" ")
 
             for pro in matching_pronunciation:
                 self.add_sound_to_matches(pronunciation_matches, pro, pro)
-        
+
         common.locations = (
-            [(-1, -1)] + common.locations + [(len(student_arpabet), len(grading_arpabet))]
+            [(-1, -1)]
+            + common.locations
+            + [(len(student_arpabet), len(grading_arpabet))]
         )
 
         print(common.locations)
@@ -161,20 +179,34 @@ class LegacyGrader:
             total_matches_length += len(common_subset)
 
             grading_to_student_subset_id = dict(common_subset.locations)
-            student_to_grading_subset_id = dict((y,x) for x,y in common_subset.locations)
+            student_to_grading_subset_id = dict(
+                (y, x) for x, y in common_subset.locations
+            )
 
             ptr = 0
             for j in range(len(grading_subset_arpabet)):
                 if j in grading_to_student_subset_id:
-                    self.add_sound_to_matches(pronunciation_matches, grading_subset_arpabet[j], student_subset_arpabet[grading_to_student_subset_id[j]])
+                    self.add_sound_to_matches(
+                        pronunciation_matches,
+                        grading_subset_arpabet[j],
+                        student_subset_arpabet[grading_to_student_subset_id[j]],
+                    )
                     ptr = grading_to_student_subset_id[j] + 1
                 else:
-                    if ptr in student_to_grading_subset_id or ptr >= len(student_subset_arpabet):
-                        self.add_sound_to_matches(pronunciation_matches, grading_subset_arpabet[j], None)
+                    if ptr in student_to_grading_subset_id or ptr >= len(
+                        student_subset_arpabet
+                    ):
+                        self.add_sound_to_matches(
+                            pronunciation_matches, grading_subset_arpabet[j], None
+                        )
                     else:
-                        self.add_sound_to_matches(pronunciation_matches, grading_subset_arpabet[j], student_subset_arpabet[ptr])
+                        self.add_sound_to_matches(
+                            pronunciation_matches,
+                            grading_subset_arpabet[j],
+                            student_subset_arpabet[ptr],
+                        )
                         ptr += 1
-                    
+
             for j in range(grading_range[0], grading_range[1]):
                 real_j = j - grading_range[0]
                 matches_word_id = [
@@ -192,12 +224,18 @@ class LegacyGrader:
 
         print(len(grading_arpabet))
         print(mismatches_id)
-        
+
         word_errors = []
         for x, y in mismatches_id:
             if y:
-                word_errors.append((grading_arpabet[x][0].word, student_arpabet[y][0].word))
+                word_errors.append(
+                    (grading_arpabet[x][0].word, student_arpabet[y][0].word)
+                )
             else:
                 word_errors.append((grading_arpabet[x][0].word, None))
-        
-        return Feedback(score=total_matches_length / total_grading_length, errors=word_errors, pronunciation_matches=pronunciation_matches)
+
+        return Feedback(
+            score=total_matches_length / total_grading_length,
+            errors=word_errors,
+            pronunciation_matches=pronunciation_matches,
+        )

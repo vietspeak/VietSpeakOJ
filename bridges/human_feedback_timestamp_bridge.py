@@ -32,9 +32,10 @@ def entry_point(session: Session):
         user_id, timestamp = row
         user_stmt = select(User).where(User.id == user_id)
         user_obj: User = session.scalar(user_stmt)
-        new_timestamp = datetime.strptime(
-                    timestamp, FORMAT
-                )
-        if user_obj and user_obj.second_to_last_human_feedback_timestamp != new_timestamp:
-            user_obj.second_to_last_human_feedback_timestamp=new_timestamp
+        new_timestamp = datetime.strptime(timestamp, FORMAT)
+        if (
+            user_obj
+            and user_obj.second_to_last_human_feedback_timestamp != new_timestamp
+        ):
+            user_obj.second_to_last_human_feedback_timestamp = new_timestamp
     session.commit()
