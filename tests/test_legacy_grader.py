@@ -15,6 +15,14 @@ def test_legacy_grader(grader: LegacyGrader):
     assert abs(grading_result.score - 8 / 9) < 1e-6
     assert grading_result.errors == [("REALLY", "VERY")]
 
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)
+
 
 def test_scenario_1(grader: LegacyGrader):
     grading_result = grader.grader(
@@ -28,6 +36,14 @@ def test_scenario_1(grader: LegacyGrader):
     assert ("ENCOURAGE", "ENCOURAGED") in grading_result.errors
     assert ("PERFECTION", "FICTION") in grading_result.errors
     assert grading_result.score <= 1
+
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)
 
 
 def test_scenario_2(grader: LegacyGrader):
@@ -68,3 +84,11 @@ including a sizeable number of women and villagers whom they had trained.
     for pair in grading_result.errors:
         assert pair[1] != "TRAINED"
     assert grading_result.score <= 1
+
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)

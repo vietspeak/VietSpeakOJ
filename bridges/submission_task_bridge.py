@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from config.config import CUTOFF_SCORE
 from grader.grading_transcript import LegacyGrader
-from model.model import Submission, Task, User, WordError
+from model.model import PronunciationMatch, Submission, Task, User, WordError
 
 
 def send_feedback_message(
@@ -85,6 +85,9 @@ def entry_point(app: App, session: Session, grader: LegacyGrader):
 
         clear_word_errors_stmt = delete(WordError).where(WordError.submission_id == submission.id)
         session.execute(clear_word_errors_stmt)
+
+        clear_pro_matches_stmt = delete(PronunciationMatch).where(PronunciationMatch.submission_id == submission.id)
+        session.execute(clear_pro_matches_stmt)
         
         word_error_objs: List[WordError] = []
         for error in feedback.errors:
@@ -95,6 +98,16 @@ def entry_point(app: App, session: Session, grader: LegacyGrader):
 
         session.add_all(word_error_objs)
 
+        pronunciation_matches : List[PronunciationMatch] = []
+        for match in feedback.pronunciation_matches:
+            pronunciation_matches.append(PronunciationMatch(
+                submission_id=submission.id,
+                grading_sound=match[0],
+                student_sound=match[1]
+            ))
+
+        session.add_all(pronunciation_matches)
+        
         session.commit()
 
         send_feedback_message(app, session, task, word_error_objs, submission)

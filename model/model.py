@@ -110,6 +110,14 @@ class WordError(Base):
     wrong_word = Column(String)
     right_word = Column(String, nullable=True)
 
+class PronunciationMatch(Base):
+    __tablename__ = "pronunciation_matches"
+
+    id = Column(Integer, primary_key=True)
+    submission_id = Column(Integer, ForeignKey("submissions.id"))
+    grading_sound = Column(String)
+    student_sound = Column(String, nullable=True)
+
 
 class Submission(Base):
     __tablename__ = "submissions"
