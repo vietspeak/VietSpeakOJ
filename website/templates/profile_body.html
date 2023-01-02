@@ -1,0 +1,36 @@
+<div class="container">
+    <div class="row">
+        <div class="col-4">
+            <h2>{{username}}</h2>
+            <strong>Số bài nộp chính thức: {{number_of_official_submissions}}</strong><br>
+            <strong>Điểm trung bình: {{average_score}}</strong> 
+        </div>
+        <div class="col-8">
+            <h2>Stress and intonation</h2>
+            <table class="table">
+                <tr>
+                    <th style="width:20%">Primary stress</th>
+                    <td>
+                        {{primary_stress_progress_bar|safe }}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Secondary stress</th>
+                    <td>
+                        {{secondary_stress_progress_bar|safe}}
+                    </td>
+                </tr>
+                <tr>
+                    <th>No stress</th>
+                    <td>
+                        {{no_stress_progress_bar|safe}}
+                    </td>
+                </tr>
+            </table>
+            <h2>Pronunciation</h2>
+            <table class="table">
+                {{pronunciation_table|safe}}
+            </table>
+        </div>
+    </div>
+</div>

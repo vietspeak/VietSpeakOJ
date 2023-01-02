@@ -20,6 +20,7 @@ from slack.app import app as slack_app
 from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
 from model.model import Submission, Task, TaskLevel, UserInfo, engine, User
 from utils.timezone_converter import timezone_converter
+from install.dictionary_loader import ARPABET_TO_IPA
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = bytes(
@@ -73,6 +74,40 @@ def check_if_task_is_available(task_number):
         stmt = select(Task).where(Task.task_number == task_number)
         result = next(session.scalars(stmt), None)
         return result is not None
+
+
+def calculate_progress(session: Session, user_id: int, sound: str) -> float:
+    stmt = f"""
+        SELECT P.student_sound
+        FROM pronunciation_matches P, submissions S
+        WHERE S.user_id = {user_id} AND S.is_official AND S.id = P.submission_id AND P.grading_sound='{sound}'
+        ORDER BY P.id DESC
+        LIMIT 1000;
+    """
+
+    results = list(session.execute(stmt))
+    if len(results) == 0:
+        return None
+
+    numer = 0
+    for x in session.execute(stmt):
+        student_sound = x[0]
+        numer += int(sound == student_sound)
+
+    return numer / len(results)
+
+
+def make_progress_bar(session: Session, user_id: int, sound: str) -> str:
+    number = calculate_progress(session, user_id, sound)
+    if number is None:
+        return """<p class="font-italic">No data</p>"""
+
+    number = round(number * 100, 2)
+    return f"""
+    <div class="progress">
+        <div class="progress-bar bg-success" role="progressbar" style="width: {number}%" aria-valuenow="{number}" aria-valuemin="0" aria-valuemax="100">{number}%</div>
+    </div>
+    """
 
 
 @app.route("/")
@@ -338,3 +373,100 @@ def syllabus():
         + render_template("syllabus_body.html")
         + render_template("footer.html")
     )
+
+
+LIST_OF_SOUNDS = [
+    "AH",
+    "R",
+    "L",
+    "S",
+    "Z",
+    "T",
+    "D",
+    "TH",
+    "DH",
+    "F",
+    "V",
+    "K",
+    "G",
+    "B",
+    "P",
+    "AE",
+    "AA",
+    "IY",
+    "IH",
+    "UW",
+    "UH",
+    "SH",
+    "ZH",
+    "CH",
+    "JH",
+    "OW",
+    "AW",
+    "AY",
+    "EY",
+    "OY",
+    "M",
+    "N",
+    "NG",
+    "Y",
+    "W",
+]
+
+
+@app.route("/profile")
+@login_required
+def profile():
+    with Session(engine) as session:
+        submissions_stmt = f"""
+            SELECT DISTINCT task_id
+            FROM submissions
+            WHERE user_id = {current_user.id} AND is_official
+        """
+        task_ids = list(session.execute(submissions_stmt))
+        number_of_official_submissions = len(task_ids)
+
+        sum_score = 0
+        for x in task_ids:
+            task_id = x[0]
+
+            find_max_score_stmt = f"""
+                SELECT MAX(score)
+                FROM submissions
+                WHERE user_id = {current_user.id} AND is_official AND task_id = {task_id}
+            """
+            sum_score += next(session.execute(find_max_score_stmt))[0]
+
+        average_score = sum_score / number_of_official_submissions
+
+        primary_stress_progress_bar = make_progress_bar(session, current_user.id, "1")
+        secondary_stress_progress_bar = make_progress_bar(session, current_user.id, "2")
+        no_stress_progress_bar = make_progress_bar(session, current_user.id, "0")
+
+        pronunciation_table_list = []
+
+        for sound in LIST_OF_SOUNDS:
+            pronunciation_table_list.append(
+                f"""
+                <tr>
+                    <th style="width:20%">{ARPABET_TO_IPA[sound]}</th>
+                    <td style="width:80%">{make_progress_bar(session, current_user.id, sound)}<td>
+                </tr>
+            """
+            )
+        pronunciation_table = "".join(pronunciation_table_list)
+
+        return (
+            render_template("header.html", page_title="Profile")
+            + render_template(
+                "profile_body.html",
+                username=current_user.display_name,
+                number_of_official_submissions=number_of_official_submissions,
+                average_score=f"{(average_score*100):.2f}",
+                primary_stress_progress_bar=primary_stress_progress_bar,
+                secondary_stress_progress_bar=secondary_stress_progress_bar,
+                no_stress_progress_bar=no_stress_progress_bar,
+                pronunciation_table=pronunciation_table,
+            )
+            + render_template("footer.html")
+        )
