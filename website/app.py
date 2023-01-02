@@ -82,7 +82,7 @@ def calculate_progress(session: Session, user_id: int, sound: str) -> float:
         FROM pronunciation_matches P, submissions S
         WHERE S.user_id = {user_id} AND S.is_official AND S.id = P.submission_id AND P.grading_sound='{sound}'
         ORDER BY P.id DESC
-        LIMIT 1000;
+        LIMIT 100;
     """
 
     results = list(session.execute(stmt))
