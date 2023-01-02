@@ -112,9 +112,45 @@ def make_progress_bar(session: Session, user_id: int, sound: str) -> str:
 
 @app.route("/")
 def home_page():
+
+    with Session(engine) as session:
+        active_user_stmt = """
+            SELECT COUNT(*)
+            FROM users
+            WHERE (NOT is_bot) AND (NOT is_eliminated)
+        """
+
+        number_of_active_users = next(session.execute(active_user_stmt))[0]
+
+        submission_stmt = """
+            SELECT COUNT(*)
+            FROM submissions
+        """
+
+        number_of_submissions = next(session.execute(submission_stmt))[0]
+
+        word_error_stmt = """
+            SELECT COUNT(*)
+            FROM word_errors
+        """
+
+        number_of_word_errors = next(session.execute(word_error_stmt))[0]
+
+        pronunciation_error_stmt = """
+            SELECT COUNT(*)
+            FROM pronunciation_matches
+            WHERE (grading_sound != student_sound) OR (student_sound IS NULL)
+        """
+        number_of_pronunciation_errors = next(session.execute(pronunciation_error_stmt))[0]
+
+
     return (
         render_template("header.html", page_title="Home")
-        + render_template("home_body.html")
+        + render_template("home_body.html", 
+        number_of_active_users=number_of_active_users, 
+        number_of_submissions=number_of_submissions, 
+        number_of_word_errors=number_of_word_errors,
+        number_of_pronunciation_errors=number_of_pronunciation_errors)
         + render_template("footer.html")
     )
 
