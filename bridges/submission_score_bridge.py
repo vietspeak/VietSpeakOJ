@@ -14,7 +14,7 @@ def entry_point(session: Session, grader: LegacyGrader):
     submission_id_stmt = """
         SELECT id 
         FROM submissions 
-        WHERE id NOT IN (
+        WHERE score > 0 AND id NOT IN (
             SELECT submission_id 
             FROM pronunciation_matches
         );
