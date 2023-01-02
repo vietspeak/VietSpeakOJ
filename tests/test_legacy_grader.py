@@ -15,6 +15,14 @@ def test_legacy_grader(grader: LegacyGrader):
     assert abs(grading_result.score - 8 / 9) < 1e-6
     assert grading_result.errors == [("REALLY", "VERY")]
 
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)
+
 
 def test_scenario_1(grader: LegacyGrader):
     grading_result = grader.grader(
@@ -28,6 +36,14 @@ def test_scenario_1(grader: LegacyGrader):
     assert ("ENCOURAGE", "ENCOURAGED") in grading_result.errors
     assert ("PERFECTION", "FICTION") in grading_result.errors
     assert grading_result.score <= 1
+
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)
 
 
 def test_scenario_2(grader: LegacyGrader):
@@ -68,3 +84,25 @@ including a sizeable number of women and villagers whom they had trained.
     for pair in grading_result.errors:
         assert pair[1] != "TRAINED"
     assert grading_result.score <= 1
+
+    for pair in grading_result.pronunciation_matches:
+        assert(pair[0] is not None)
+        if pair[0] and pair[1]:
+            is_num_1 = "0"<=pair[0][0]<="9"
+            is_num_2 = "0"<=pair[1][0]<="9"
+
+            assert not (is_num_1 ^ is_num_2)
+
+
+def test_scenario_3(grader: LegacyGrader):
+    student_text = """
+    
+    """
+
+    grader_text = """
+    STRETCHING ALONG COAST ASIA WITH DENSE SOCIALIST REPUBLIC VIETNAM HOME APPROXIMATELY PEOPLE HISTORY BEEN SHAPED THROUGH GEOGRAPHY MARITIME TRADE TUMULTUOUS RELATIONSHIP WITH NEIGHBOR CHINA NORTH SINCE PREHISTORIC TIMES RIVER DELTA BEEN POPULATION CENTER FERTILE SOIL LOCATION COMMUNITIES RICE GROWERS BEGAN DEVELOP THIS REGION EVENTUALLY KINGDOM WHICH CORRESPONDS BRONZE MATERIAL CULTURE ALONG SOUTHERN COAST SEPARATE CULTURE DEVELOPED STRONG TIES WITH WESTERN CENTRAL PHILIPPINE ARCHIPELAGO PEOPLE UNITED WITH PEOPLE ANCIENT PEOPLE ANCESTORS MODERN SPEAKING PEOPLES NORTHERN VIETNAM SUCH HAIR TATTOOS PRACTICE TEETH CULTURAL ASPECTS ORIGINATING WITH SIGNIFICANT UNITING INFLUENCE HOWEVER ONLY LASTED LONG REIGN FOUNDING MONARCH RESPONSE FIRST CHINESE EMPEROR SUCCESSORS EXPANSION MANY TRIBES REGION UNITED POWERFUL KINGDOM WHICH BECAME WEALTHY THROUGH IVORY PEARLS PRECIOUS WOODS FROM JUNGLES VIETNAM CHINA REUNITED DYNASTY THEY BEGAN EXTRACT TRIBUTE FROM EVENTUALLY THIS ENOUGH SATISFY INVADED INCORPORATED EMPIRE CHINESE RULE MARKED WITH FAILED ATTEMPTS ASSIMILATE VIET LARGER HOMOGENIZED CHINESE CULTURE PARTICULARLY WITH COMMON WOMEN GREATER AUTONOMY CULTURAL STATUS THAN THEIR CHINESE COUNTERPARTS TIME DAUGHTERS MILITARY PREFECT AFTER THEIR HUSBANDS EXECUTED SISTERS AMBUSHED SMALL LOCAL GARRISON THEIR VILLAGE BEGAN TAKING OTHER CITIES TOWNS CHINESE INITIALLY TAKE REBELLION SERIOUSLY RESPONDED WERE DEFEATED TIME AGAIN SISTERS ARMY INCLUDING SIZABLE NUMBER WOMEN VILLAGERS WHOM THEY TRAINED
+    """
+    grading_result = grader.grader(student_text, grader_text)
+
+
+    assert len(grading_result.pronunciation_matches) == 0

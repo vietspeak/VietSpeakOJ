@@ -21,8 +21,6 @@ def entry_point(session: Session):
 
     for user in session.execute(user_stmt):
         user_id: int = user[0]
-        update_stmt = update(User).where(
-            User.id == user_id).values(
-            is_eliminated=False)
+        update_stmt = update(User).where(User.id == user_id).values(is_eliminated=False)
         session.execute(update_stmt)
     session.commit()
