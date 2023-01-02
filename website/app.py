@@ -416,6 +416,7 @@ LIST_OF_SOUNDS = [
 
 @app.route("/profile")
 @login_required
+@limiter.limit("1 per minute")
 def profile():
     with Session(engine) as session:
         submissions_stmt = f"""
