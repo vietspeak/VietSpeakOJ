@@ -10,7 +10,6 @@ from bridges import (
     submission_task_bridge,
     slack_user_bridge,
     submission_timestamp_bridge,
-    submission_score_bridge,
     human_feedback_timestamp_bridge,
     user_elimination,
     user_reactivation,
@@ -48,7 +47,6 @@ while True:
             submission_audio_bridge.entry_point(session)
             submission_transcript_bridge.entry_point(session, task_determiner)
             submission_task_bridge.entry_point(app, session, grader)
-            submission_score_bridge.entry_point(session, grader)
             submission_timestamp_bridge.entry_point(session)
             human_feedback_timestamp_bridge.entry_point(session)
             user_elimination.entry_point(session)
