@@ -110,6 +110,15 @@ def make_progress_bar(session: Session, user_id: int, sound: str) -> str:
     """
 
 
+def generate_button(task_number: int, task_level_str: str) -> str:
+    task_level_str = task_level_str[0].upper() + task_level_str[1:].lower()
+    button_type = BUTTON_MAP[TaskLevel._member_map_[task_level_str.upper()]]
+
+    return f"""
+        <a type="button" class="btn btn-{button_type}" href="/tasks?number={task_number}&level={task_level_str}">{task_level_str.upper()} {task_number}</a>
+    """
+
+
 @app.route("/")
 def home_page():
 
@@ -141,16 +150,19 @@ def home_page():
             FROM pronunciation_matches
             WHERE (grading_sound != student_sound) OR (student_sound IS NULL)
         """
-        number_of_pronunciation_errors = next(session.execute(pronunciation_error_stmt))[0]
-
+        number_of_pronunciation_errors = next(
+            session.execute(pronunciation_error_stmt)
+        )[0]
 
     return (
         render_template("header.html", page_title="Home")
-        + render_template("home_body.html", 
-        number_of_active_users=number_of_active_users, 
-        number_of_submissions=number_of_submissions, 
-        number_of_word_errors=number_of_word_errors,
-        number_of_pronunciation_errors=number_of_pronunciation_errors)
+        + render_template(
+            "home_body.html",
+            number_of_active_users=number_of_active_users,
+            number_of_submissions=number_of_submissions,
+            number_of_word_errors=number_of_word_errors,
+            number_of_pronunciation_errors=number_of_pronunciation_errors,
+        )
         + render_template("footer.html")
     )
 
@@ -506,3 +518,111 @@ def profile():
             )
             + render_template("footer.html")
         )
+
+
+@app.route("/ranking", methods=["GET"])
+def ranking_page():
+
+    max_task_number = get_max_task_number()
+    task_number = int(request.values.get("number", max_task_number))
+
+    previous_task_link = (
+        f"""
+        <a href="/ranking?number={task_number-1}">&#8592; Task {task_number-1}</a>
+    """
+        if check_if_task_is_available(task_number - 1)
+        else ""
+    )
+
+    next_task_link = (
+        f"""
+        <a href="/ranking?number={task_number+1}">Task {task_number+1} &rarr;</a>
+    """
+        if check_if_task_is_available(task_number + 1)
+        else ""
+    )
+
+    table_inner_code = []
+
+    with Session(engine) as session:
+        for level_str, level in TaskLevel._member_map_.items():
+            print(level_str, level)
+            task_id_stmt = select(Task).where(
+                and_(Task.task_number == task_number, Task.level == level)
+            )
+            task: Task = session.scalar(task_id_stmt)
+
+            if not task:
+                continue
+
+            number_of_participant_stmt = f"""
+                SELECT COUNT(DISTINCT user_id)
+                FROM submissions
+                WHERE is_official AND task_id={task.id}
+            """
+
+            number_of_participants = next(session.execute(number_of_participant_stmt))[
+                0
+            ]
+
+            if number_of_participants > 3:
+                table_inner_code.append(
+                    f"""
+                    <tr>
+                        <th colspan=3>{generate_button(task_number, level_str)}</th>
+                    </tr>
+                    <tr>
+                        <td colspan=3>Số bạn tham gia task này: {number_of_participants}</td>
+                    </tr>
+                    <tr>
+                        <th>#</th>
+                        <th>Thành viên</th>
+                        <th>Điểm</th>
+                    </tr>
+                """
+                )
+
+                best_members_stmt = f"""
+                    SELECT U.display_name, R.score 
+                    FROM (
+                        SELECT *
+                        FROM (
+                            SELECT user_id, score, created_time, dense_rank() OVER (PARTITION BY user_id ORDER BY score DESC, created_time ASC) as ranking 
+                            FROM (
+                                SELECT user_id, score, created_time
+                                FROM submissions
+                                WHERE (is_official) AND (task_id={task.id})
+                            )
+                        )
+                        WHERE ranking = 1
+                        ORDER BY score DESC, created_time ASC
+                        LIMIT 3) R, users U
+                    WHERE R.user_id = U.id;
+                """
+
+                best_members_result = session.execute(best_members_stmt)
+                for rank, result in enumerate(best_members_result):
+                    table_inner_code.append(
+                        f"""
+                        <tr>
+                            <td>{rank+1}</td>
+                            <td>{result[0] if current_user.is_authenticated and task_number < max_task_number else '???'}</td>
+                            <td>{(result[1] * 100):.2f}</td>
+                        </tr>
+                    """
+                    )
+
+    return (
+        render_template(
+            "header.html",
+            page_title=f"Ranking - Task {task_number}",
+        )
+        + render_template(
+            "ranking_body.html",
+            task_number=str(task_number),
+            previous_task_link=previous_task_link,
+            next_task_link=next_task_link,
+            table_inner_code="".join(table_inner_code),
+        )
+        + render_template("footer.html")
+    )
