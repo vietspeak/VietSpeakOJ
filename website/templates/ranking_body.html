@@ -1,0 +1,16 @@
+<div class="container">
+    <div class="d-flex justify-content-between mb-3">
+        <div class="p-2">
+          {{ previous_task_link|safe }}
+        </div>
+        <div class="p-2">
+          <h1 class="fw-bold" style="font-family: 'Arial'">Bảng xếp hạng Task {{ task_number }}</h1>
+        </div>
+        <div class="p-2">
+            {{ next_task_link|safe }}
+        </div>
+    </div>
+    <table class="table">
+        {{table_inner_code|safe}}
+    </table>
+</div>
