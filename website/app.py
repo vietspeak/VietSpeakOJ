@@ -364,9 +364,11 @@ def register():
     answers = [
         int((request.values.get(f"question_{i}") or "0").strip()) for i in range(1, 9)
     ]
-    print(answers)
     if answers == [1, 4, 10, 1, 1, 0, 0, 1]:
         email = request.values.get("email", "")
+
+        if len(email) > 255:
+            return f"Địa chỉ email của bạn quá dài. Hãy đăng kí bằng một email khác."
 
         with Session(engine) as session:
             user_stmt = select(User).where(User.email == email)
@@ -391,7 +393,7 @@ def register():
                     channel=admin.slack_id,
                 )
 
-            location = request.values.get("question_9")
+            location = request.values.get("question_9", "")[:255]
             user_info = UserInfo(email=email, location=location)
 
             session.add(user_info)
