@@ -1,6 +1,7 @@
-from sqlite3 import OperationalError
+import sqlite3
 import time
 import os
+from sqlalchemy import exc
 from sqlalchemy.orm import Session
 
 from bridges import (
@@ -51,7 +52,7 @@ while True:
             human_feedback_timestamp_bridge.entry_point(session)
             user_elimination.entry_point(session)
             user_reactivation.entry_point(session)
-    except OperationalError:
+    except (sqlite3.OperationalError, exc.OperationalError):
         print("Database is locked. Data are not updated")
 
     time.sleep(SLEEP_INTERVAL)
