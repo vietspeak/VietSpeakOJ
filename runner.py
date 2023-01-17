@@ -35,7 +35,6 @@ counter = 0
 while True:
     try:
         with Session(engine) as session:
-            """
             dictionary = Dictionary(session)
             grading_transcript_producer = GradingTranscript(dictionary)
             task_determiner = TaskDeterminer(session)
@@ -54,7 +53,6 @@ while True:
             human_feedback_timestamp_bridge.entry_point(session)
             user_elimination.entry_point(session)
             user_reactivation.entry_point(session)
-            """
             medal_awarder.entry_point(session)
     except (sqlite3.OperationalError, exc.OperationalError) as e:
         print(e)
