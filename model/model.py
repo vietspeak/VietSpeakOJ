@@ -49,6 +49,11 @@ class TaskLevel(enum.Enum):
     BLUE = 2
     RED = 3
 
+class MedalType(enum.Enum):
+    GOLD = 0
+    SILVER = 1
+    BRONZE = 2
+
 
 class User(Base, UserMixin):
     __tablename__ = "users"
@@ -226,6 +231,14 @@ class UserInfo(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String)
     location = Column(String)
+
+class Medal(Base):
+    __tablename__ = "medals"
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    task_id = Column(Integer, ForeignKey("tasks.id"))
+    medal_type = Column(Enum(MedalType))
 
 
 Base.metadata.create_all(engine)

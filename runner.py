@@ -14,6 +14,7 @@ from bridges import (
     human_feedback_timestamp_bridge,
     user_elimination,
     user_reactivation,
+    medal_awarder
 )
 from grader.grading_transcript import GradingTranscript, LegacyGrader
 from model.model import engine
@@ -34,6 +35,7 @@ counter = 0
 while True:
     try:
         with Session(engine) as session:
+            """
             dictionary = Dictionary(session)
             grading_transcript_producer = GradingTranscript(dictionary)
             task_determiner = TaskDeterminer(session)
@@ -52,7 +54,10 @@ while True:
             human_feedback_timestamp_bridge.entry_point(session)
             user_elimination.entry_point(session)
             user_reactivation.entry_point(session)
-    except (sqlite3.OperationalError, exc.OperationalError):
+            """
+            medal_awarder.entry_point(session)
+    except (sqlite3.OperationalError, exc.OperationalError) as e:
+        print(e)
         print("Database is locked. Data are not updated")
 
     time.sleep(SLEEP_INTERVAL)

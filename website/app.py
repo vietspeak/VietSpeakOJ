@@ -21,6 +21,7 @@ from config.config import MAX_NUMBER_OF_SUBMISSIONS_IN_QUEUE
 from model.model import Submission, Task, TaskLevel, UserInfo, engine, User
 from utils.timezone_converter import timezone_converter
 from install.dictionary_loader import ARPABET_TO_IPA
+from utils.task_availability import get_max_task_number, check_if_task_is_available
 
 app = Flask(__name__, template_folder="templates")
 app.secret_key = bytes(
@@ -56,24 +57,6 @@ TASK_STR_MAP = {
     TaskLevel.BLUE: "Blue",
     TaskLevel.RED: "Red",
 }
-
-
-def get_max_task_number():
-    with Session(engine) as session:
-        stmt = """
-            SELECT MAX(task_number)
-            FROM tasks;
-        """
-
-        result = next(session.execute(stmt))
-        return result[0]
-
-
-def check_if_task_is_available(task_number):
-    with Session(engine) as session:
-        stmt = select(Task).where(Task.task_number == task_number)
-        result = next(session.scalars(stmt), None)
-        return result is not None
 
 
 def calculate_progress(session: Session, user_id: int, sound: str) -> float:
@@ -506,6 +489,24 @@ def profile():
             )
         pronunciation_table = "".join(pronunciation_table_list)
 
+        gold_medal_stmt = f"""
+            SELECT COUNT(*) FROM medals WHERE user_id={current_user.id} AND medal_type='GOLD'        
+        """
+
+        gold_medals = next(session.execute(gold_medal_stmt))[0]
+
+        silver_medal_stmt = f"""
+            SELECT COUNT(*) FROM medals WHERE user_id={current_user.id} AND medal_type='SILVER'        
+        """
+
+        silver_medals = next(session.execute(silver_medal_stmt))[0]
+
+        bronze_medal_stmt = f"""
+            SELECT COUNT(*) FROM medals WHERE user_id={current_user.id} AND medal_type='BRONZE'        
+        """
+
+        bronze_medals = next(session.execute(bronze_medal_stmt))[0]
+
         return (
             render_template("header.html", page_title="Profile")
             + render_template(
@@ -517,6 +518,9 @@ def profile():
                 secondary_stress_progress_bar=secondary_stress_progress_bar,
                 no_stress_progress_bar=no_stress_progress_bar,
                 pronunciation_table=pronunciation_table,
+                gold_medals=gold_medals,
+                silver_medals=silver_medals,
+                bronze_medals=bronze_medals
             )
             + render_template("footer.html")
         )
