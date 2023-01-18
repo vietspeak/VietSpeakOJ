@@ -198,7 +198,7 @@ def tasks_page():
                         Submission.task_id == task_info.id,
                     )
                 )
-                .order_by(desc(Submission.id))
+                .order_by(desc(Submission.is_official), desc(Submission.id))
                 .limit(5)
             )
             result = session.scalars(submission_stmt)
@@ -534,6 +534,31 @@ def profile():
             )
             max_rating_score = max(i["y"] for i in rating_history_data)
 
+        recent_medal_stmt = """
+            SELECT task_id, medal_type FROM medals
+            WHERE user_id=148
+            ORDER BY id DESC
+            LIMIT 5;
+        """
+
+        recent_medals_list: List[str] = []
+
+        for result in session.execute(recent_medal_stmt):
+            task_id = result[0]
+            task: Task = session.scalar(select(Task).where(Task.id == task_id))
+
+            medal_type = {
+                "GOLD": "&#129351;",
+                "SILVER": "&#129352;",
+                "BRONZE": "&#129353;"
+            }[result[1]]
+
+            recent_medals_list.append(f"<tr><td>{generate_button(task.task_number, TASK_STR_MAP[task.level].upper())}</td><td>{medal_type}</td></tr>")
+        
+        recent_medals = "".join(recent_medals_list)
+
+
+
         return (
             render_template("header.html", page_title="Profile")
             + render_template(
@@ -553,6 +578,7 @@ def profile():
                 rating_ranking_str=rating_ranking_str,
                 min_task_to_max_task_list=min_task_to_max_task_list,
                 rating_history_data=rating_history_data,
+                recent_medals=recent_medals
             )
             + render_template("footer.html")
         )
