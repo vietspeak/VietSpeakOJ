@@ -15,7 +15,7 @@ from bridges import (
     user_elimination,
     user_reactivation,
     medal_awarder,
-    rating_calculator
+    rating_calculator,
 )
 from grader.grading_transcript import GradingTranscript, LegacyGrader
 from model.model import engine
@@ -43,8 +43,7 @@ while True:
             if counter == 0:
                 slack_user_bridge.entry_point(app, session)
                 rating_calculator.entry_point(session)
-                
-                
+
             counter += 1
             if counter == FETCH_COUNTER:
                 counter = 0

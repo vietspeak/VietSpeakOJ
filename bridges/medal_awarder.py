@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from model.model import Medal, TaskLevel, Task, User, MedalType
 from sqlalchemy import select, and_, delete
 
+
 def entry_point(session: Session):
     max_task_number = get_max_task_number()
     session.execute(delete(Medal))
@@ -48,16 +49,20 @@ def entry_point(session: Session):
 
                 best_members_result = session.execute(best_members_stmt)
                 for rank, result in enumerate(best_members_result):
-                    user : User = session.scalar(select(User).where(User.id == result[0]))
-                    medal_objs.append(Medal(
-                        user_id = user.id,
-                        task_id = task.id,
-                        medal_type = {
-                            0: MedalType.GOLD,
-                            1: MedalType.SILVER,
-                            2: MedalType.BRONZE
-                        }[rank]
-                    ))
-    
+                    user: User = session.scalar(
+                        select(User).where(User.id == result[0])
+                    )
+                    medal_objs.append(
+                        Medal(
+                            user_id=user.id,
+                            task_id=task.id,
+                            medal_type={
+                                0: MedalType.GOLD,
+                                1: MedalType.SILVER,
+                                2: MedalType.BRONZE,
+                            }[rank],
+                        )
+                    )
+
     session.add_all(medal_objs)
     session.commit()

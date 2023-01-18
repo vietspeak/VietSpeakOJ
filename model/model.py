@@ -5,8 +5,19 @@ import string
 from email.policy import default
 from typing import Any, Dict, Iterable, List
 
-from sqlalchemy import (BLOB, TIMESTAMP, Boolean, Column, Enum, Float,
-                        ForeignKey, Integer, String, create_engine, select)
+from sqlalchemy import (
+    BLOB,
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    create_engine,
+    select,
+)
 from sqlalchemy.orm import declarative_base, Session
 from sqlalchemy.sql import func
 
@@ -49,6 +60,7 @@ class TaskLevel(enum.Enum):
     BLUE = 2
     RED = 3
 
+
 class MedalType(enum.Enum):
     GOLD = 0
     SILVER = 1
@@ -79,7 +91,11 @@ class User(Base, UserMixin):
     def from_dict(cls, user: Dict[str, Any]) -> User:
         user_id = user.get("id")
         user_email = user["profile"].get("email")
-        display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
+        display_name = (
+            user["profile"].get("display_name")
+            or user.get("real_name")
+            or user.get("name")
+        )
         is_bot = user.get("is_bot", False)
         is_owner = user.get("is_owner", False)
         is_admin = user.get("is_admin", False)
@@ -91,9 +107,9 @@ class User(Base, UserMixin):
             is_bot=is_bot,
             is_owner=is_owner,
             is_admin=is_admin,
-            display_name=display_name
+            display_name=display_name,
         )
-    
+
     @classmethod
     def get(cls, user_id: str) -> User:
         with Session(engine) as session:
@@ -105,8 +121,12 @@ class User(Base, UserMixin):
         self.is_bot = user.get("is_bot", False)
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
-        self.display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
-    
+        self.display_name = (
+            user["profile"].get("display_name")
+            or user.get("real_name")
+            or user.get("name")
+        )
+
     def get_rating(self) -> float:
         with Session(engine) as session:
             rating_stmt = f"""
@@ -121,9 +141,9 @@ class User(Base, UserMixin):
 
             if rating_obj is None:
                 return 1500
-            
+
             return rating_obj[0]
-        
+
     def get_rating_history(self) -> List[Dict[str, Any]]:
         with Session(engine) as session:
             rating_history_stmt = f"""
@@ -138,9 +158,9 @@ class User(Base, UserMixin):
                 find_task_stmt = select(Task).where(Task.id == result[0])
                 task: Task = session.scalar(find_task_stmt)
                 task_to_rating[task.task_number] = result[1]
-            
+
             return [{"x": i[0], "y": round(i[1])} for i in task_to_rating.items()]
-        
+
     def get_max_rating(self) -> float:
         with Session(engine) as session:
             rating_stmt = f"""
@@ -156,6 +176,7 @@ class User(Base, UserMixin):
 
             return rating_obj[0]
 
+
 class WordError(Base):
     __tablename__ = "word_errors"
 
@@ -163,6 +184,7 @@ class WordError(Base):
     submission_id = Column(Integer, ForeignKey("submissions.id"))
     wrong_word = Column(String)
     right_word = Column(String, nullable=True)
+
 
 class PronunciationMatch(Base):
     __tablename__ = "pronunciation_matches"
@@ -200,11 +222,15 @@ class Submission(Base):
                 level_name = level_name[0] + level_name[1:].lower()
 
                 result = f"Mình xin phép được nhận xét bài {level_name} Task {task.task_number} của bạn\n\n"
-                
-                word_errors_stmt = select(WordError).where(WordError.submission_id == self.id)
+
+                word_errors_stmt = select(WordError).where(
+                    WordError.submission_id == self.id
+                )
                 word_errors: List[WordError] = list(session.scalars(word_errors_stmt))
 
-                result += f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n\n"
+                result += (
+                    f"Mình thấy có {len(word_errors)} chỗ bạn phát âm chưa ổn.\n\n"
+                )
 
                 if len(word_errors):
                     error_msg = " | ".join(
@@ -213,19 +239,22 @@ class Submission(Base):
                     )
 
                     result += f"**{error_msg}**\n\n"
-                
+
                 result += "Đây là những gì mình nghe được từ bạn:\n\n"
                 result += self.transcript.lower() + "\n\n"
 
-                human_feedback_stmt = select(HumanFeedback).where(HumanFeedback.submission_id == self.id)
-                human_feedback: Iterable[HumanFeedback] = session.scalars(human_feedback_stmt)
+                human_feedback_stmt = select(HumanFeedback).where(
+                    HumanFeedback.submission_id == self.id
+                )
+                human_feedback: Iterable[HumanFeedback] = session.scalars(
+                    human_feedback_stmt
+                )
                 for feedback in human_feedback:
                     result += feedback.generate_feedback_markdown() + "\n\n"
-                
+
                 return result
-        
+
         return ""
-            
 
 
 class Task(Base):
@@ -281,6 +310,7 @@ class UserInfo(Base):
     email = Column(String)
     location = Column(String)
 
+
 class Medal(Base):
     __tablename__ = "medals"
 
@@ -289,12 +319,14 @@ class Medal(Base):
     task_id = Column(Integer, ForeignKey("tasks.id"))
     medal_type = Column(Enum(MedalType))
 
+
 class Rating(Base):
     __tablename__ = "rating"
-    
+
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     task_id = Column(Integer, ForeignKey("tasks.id"))
     value = Column(Float)
+
 
 Base.metadata.create_all(engine)

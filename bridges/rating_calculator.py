@@ -4,12 +4,13 @@ from sqlalchemy.orm import Session
 from model.model import Rating, TaskLevel, Task, User, MedalType
 from sqlalchemy import select, and_, delete
 
+
 def entry_point(session: Session):
     max_task_number = get_max_task_number()
-    
+
     session.execute(delete(Rating))
     session.commit()
-    
+
     for task_number in range(1, max_task_number + 1):
         for _, level in TaskLevel._member_map_.items():
             task_id_stmt = select(Task).where(
@@ -28,32 +29,35 @@ def entry_point(session: Session):
 
             user_data: List[Dict[str, Any]] = []
             for result in session.execute(participant_stmt):
-                user_obj: User = session.scalar(select(User).where(User.id == result[0]))
+                user_obj: User = session.scalar(
+                    select(User).where(User.id == result[0])
+                )
                 user_data.append(
                     {
                         "user_id": user_obj.id,
                         "score": result[1],
-                        "rating": user_obj.get_rating()
+                        "rating": user_obj.get_rating(),
                     }
                 )
-            
+
             n = len(user_data)
 
             if n < 2:
                 continue
 
-            
             user_data.sort(key=lambda x: x["score"], reverse=True)
-            rnd = n-1+n%2
+            rnd = n - 1 + n % 2
             schedule = [[] for i in range(rnd)]
             for i in range(rnd):
                 for j in range(i, rnd):
-                    if i==j:
-                        if n%2==0:
-                            schedule[(i+j)%rnd].append([user_data[i], user_data[n-1]])
+                    if i == j:
+                        if n % 2 == 0:
+                            schedule[(i + j) % rnd].append(
+                                [user_data[i], user_data[n - 1]]
+                            )
                     else:
-                        schedule[(i+j)%rnd].append([user_data[i], user_data[j]])
-            
+                        schedule[(i + j) % rnd].append([user_data[i], user_data[j]])
+
             for i in range(rnd):
                 for match in schedule[i]:
                     a = match[0]
@@ -65,7 +69,7 @@ def entry_point(session: Session):
                         sa = 1
                     if a["score"] == b["score"]:
                         sa = 0.5
-                    sb = 1-sa
+                    sb = 1 - sa
 
                     if b["score"] == 1:
                         sb = 1
@@ -84,21 +88,16 @@ def entry_point(session: Session):
                         kb = 200
                     if b["rating"] >= 2400:
                         kb = 100
-                    ka/=(n-1)
-                    kb/=(n-1)
+                    ka /= n - 1
+                    kb /= n - 1
 
                     a["rating"] = a["rating"] + ka * (sa - ea)
                     b["rating"] = b["rating"] + kb * (sb - eb)
 
-
             rating_objs: List[Rating] = []
             for u in user_data:
                 rating_objs.append(
-                    Rating(
-                        user_id=u["user_id"],
-                        task_id=task.id,
-                        value=u["rating"]
-                    )
+                    Rating(user_id=u["user_id"], task_id=task.id, value=u["rating"])
                 )
             session.add_all(rating_objs)
             session.commit()

@@ -524,14 +524,16 @@ def profile():
         rating_ranking_str = ""
         if rating_ranking_obj:
             rating_ranking_str = f"(#{rating_ranking_obj[0]})"
-        
+
         rating_history_data = current_user.get_rating_history()
         min_task_to_max_task_list = []
         max_rating_score = 1500
         if rating_history_data:
-            min_task_to_max_task_list = list(range(rating_history_data[0]["x"], rating_history_data[-1]["x"]+1))
+            min_task_to_max_task_list = list(
+                range(rating_history_data[0]["x"], rating_history_data[-1]["x"] + 1)
+            )
             max_rating_score = max(i["y"] for i in rating_history_data)
-        
+
         return (
             render_template("header.html", page_title="Profile")
             + render_template(
@@ -551,7 +553,6 @@ def profile():
                 rating_ranking_str=rating_ranking_str,
                 min_task_to_max_task_list=min_task_to_max_task_list,
                 rating_history_data=rating_history_data,
-
             )
             + render_template("footer.html")
         )
