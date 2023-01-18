@@ -507,6 +507,24 @@ def profile():
 
         bronze_medals = next(session.execute(bronze_medal_stmt))[0]
 
+        rating_ranking_stmt = f"""
+            SELECT rating_ranking 
+            FROM
+                (
+                    WITH rating_temp AS (
+                        SELECT user_id, value, dense_rank() OVER (PARTITION BY user_id ORDER BY id DESC) as time_ranking
+                        FROM rating
+                    )
+                    SELECT user_id, value, dense_rank() OVER (ORDER BY value DESC) as rating_ranking FROM rating_temp WHERE time_ranking=1
+                )
+            WHERE user_id={current_user.id};
+        """
+
+        rating_ranking_obj = next(session.execute(rating_ranking_stmt), None)
+        rating_ranking_str = ""
+        if rating_ranking_obj:
+            rating_ranking_str = f"(#{rating_ranking_obj[0]})"
+        
         return (
             render_template("header.html", page_title="Profile")
             + render_template(
@@ -520,7 +538,10 @@ def profile():
                 pronunciation_table=pronunciation_table,
                 gold_medals=gold_medals,
                 silver_medals=silver_medals,
-                bronze_medals=bronze_medals
+                bronze_medals=bronze_medals,
+                rating_score=round(current_user.get_rating()),
+                max_rating_score=round(current_user.get_max_rating()),
+                rating_ranking_str=rating_ranking_str
             )
             + render_template("footer.html")
         )

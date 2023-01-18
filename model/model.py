@@ -106,6 +106,38 @@ class User(Base, UserMixin):
         self.is_owner = user.get("is_owner", False)
         self.is_admin = user.get("is_admin", False)
         self.display_name = user["profile"].get("display_name") or user.get("real_name") or user.get("name")
+    
+    def get_rating(self) -> float:
+        with Session(engine) as session:
+            rating_stmt = f"""
+                SELECT value
+                FROM rating
+                WHERE user_id = {self.id}
+                ORDER BY id DESC
+                LIMIT 1
+            """
+
+            rating_obj = next(session.execute(rating_stmt), None)
+
+            if rating_obj is None:
+                return 1500
+            
+            return rating_obj[0]
+        
+    def get_max_rating(self) -> float:
+        with Session(engine) as session:
+            rating_stmt = f"""
+                SELECT MAX(value)
+                FROM rating
+                WHERE user_id = {self.id}
+            """
+
+            rating_obj: Rating = next(session.execute(rating_stmt), None)
+
+            if rating_obj is None:
+                return 1500
+
+            return rating_obj[0]
 
 class WordError(Base):
     __tablename__ = "word_errors"
@@ -240,5 +272,12 @@ class Medal(Base):
     task_id = Column(Integer, ForeignKey("tasks.id"))
     medal_type = Column(Enum(MedalType))
 
+class Rating(Base):
+    __tablename__ = "rating"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    task_id = Column(Integer, ForeignKey("tasks.id"))
+    value = Column(Float)
 
 Base.metadata.create_all(engine)
