@@ -470,7 +470,7 @@ def profile():
             """
             sum_score += next(session.execute(find_max_score_stmt))[0]
 
-        average_score = sum_score / number_of_official_submissions
+        average_score = sum_score / max(1, number_of_official_submissions)
 
         primary_stress_progress_bar = make_progress_bar(session, current_user.id, "1")
         secondary_stress_progress_bar = make_progress_bar(session, current_user.id, "2")
@@ -525,6 +525,13 @@ def profile():
         if rating_ranking_obj:
             rating_ranking_str = f"(#{rating_ranking_obj[0]})"
         
+        rating_history_data = current_user.get_rating_history()
+        min_task_to_max_task_list = []
+        max_rating_score = 1500
+        if rating_history_data:
+            min_task_to_max_task_list = list(range(rating_history_data[0]["x"], rating_history_data[-1]["x"]+1))
+            max_rating_score = max(i["y"] for i in rating_history_data)
+        
         return (
             render_template("header.html", page_title="Profile")
             + render_template(
@@ -540,8 +547,11 @@ def profile():
                 silver_medals=silver_medals,
                 bronze_medals=bronze_medals,
                 rating_score=round(current_user.get_rating()),
-                max_rating_score=round(current_user.get_max_rating()),
-                rating_ranking_str=rating_ranking_str
+                max_rating_score=max_rating_score,
+                rating_ranking_str=rating_ranking_str,
+                min_task_to_max_task_list=min_task_to_max_task_list,
+                rating_history_data=rating_history_data,
+
             )
             + render_template("footer.html")
         )

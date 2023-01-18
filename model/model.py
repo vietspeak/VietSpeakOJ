@@ -124,6 +124,23 @@ class User(Base, UserMixin):
             
             return rating_obj[0]
         
+    def get_rating_history(self) -> List[Dict[str, Any]]:
+        with Session(engine) as session:
+            rating_history_stmt = f"""
+                SELECT task_id, value
+                FROM rating
+                WHERE user_id = {self.id}
+                ORDER BY id ASC
+            """
+
+            task_to_rating = {}
+            for result in session.execute(rating_history_stmt):
+                find_task_stmt = select(Task).where(Task.id == result[0])
+                task: Task = session.scalar(find_task_stmt)
+                task_to_rating[task.task_number] = result[1]
+            
+            return [{"x": i[0], "y": round(i[1])} for i in task_to_rating.items()]
+        
     def get_max_rating(self) -> float:
         with Session(engine) as session:
             rating_stmt = f"""
