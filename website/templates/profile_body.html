@@ -10,17 +10,21 @@
             <div>
                 <table class="table">
                     <tr>
-                        <th>Gold</th>
-                        <th>Silver</th>
-                        <th>Bronze</th>
+                        <th>&#129351;</th>
+                        <th>&#129352;</th>
+                        <th>&#129353;</th>
                     </tr>
                     <tr>
-                        <th>{{gold_medals}}</th>
-                        <th>{{silver_medals}}</th>
-                        <th>{{bronze_medals}}</th>
+                        <td>{{gold_medals}}</td>
+                        <td>{{silver_medals}}</td>
+                        <td>{{bronze_medals}}</td>
                     </tr>
                 </table>
+                <table class="table">
+                    {{recent_medals|safe}}
+                </table>
             </div>
+            
         </div>
         <div class="col-8">
             <div class="accordion" id="accordionExample">
