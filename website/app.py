@@ -690,3 +690,17 @@ def ranking_page():
         )
         + render_template("footer.html")
     )
+
+@app.route("/active_users")
+def active_users():
+    list_of_active_users = []
+    with Session(engine) as session:
+        active_user_stmt = select(User).where(and_(User.is_bot == False, User.is_eliminated == False))
+        for user in session.scalars(active_user_stmt):
+            user: User
+            list_of_active_users.append(user.slack_id)
+    
+    return {
+        "status": True,
+        "result": list_of_active_users
+    }
