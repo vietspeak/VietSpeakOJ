@@ -704,3 +704,13 @@ def active_users():
         "status": True,
         "result": list_of_active_users
     }
+
+@app.route("/how_to_login")
+def how_to_login():
+    return (
+            render_template("header.html", page_title="Login")
+            + render_template(
+                "how_to_login_body.html"
+            )
+            + render_template("footer.html")
+        )
