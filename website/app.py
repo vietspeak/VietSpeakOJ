@@ -382,7 +382,10 @@ def register():
             session.add(user_info)
             session.commit()
 
-        return f"Bạn đã trả lời chính xác các câu hỏi. Trong vòng 12 tiếng tới, một thư mời tham gia nhóm Slack sẽ được gửi đến {email}."
+        return """
+        <p>Bạn đã trả lời chính xác các câu hỏi. Hãy sử dụng link sau để đăng kí tài khoản VietSpeak trên Slack!</p>
+        <a href='https://join.slack.com/t/tvevoices4all-group/shared_invite/zt-1tqxi84yb-EaRQ7Os5UvCVAAmw9Fw6vQ'>https://join.slack.com/t/tvevoices4all-group/shared_invite/zt-1tqxi84yb-EaRQ7Os5UvCVAAmw9Fw6vQ</a>
+        """
 
     return "Bạn chưa trả lời chính xác các câu hỏi."
 
