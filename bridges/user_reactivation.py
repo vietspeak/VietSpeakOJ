@@ -10,9 +10,7 @@ def entry_point(session: Session):
         SELECT id FROM users
         WHERE ((JULIANDAY(CURRENT_TIMESTAMP) - JULIANDAY(created_time) < {NUMBER_OF_RESTING_DAYS})
             OR (last_official_submission_timestamp IS NOT NULL AND
-                second_to_last_human_feedback_timestamp IS NOT NULL AND
-                julianday(current_timestamp) - julianday(last_official_submission_timestamp) <= {NUMBER_OF_RESTING_DAYS} AND
-                julianday(current_timestamp) - julianday(second_to_last_human_feedback_timestamp) <= {NUMBER_OF_RESTING_DAYS})
+                julianday(current_timestamp) - julianday(last_official_submission_timestamp) <= {NUMBER_OF_RESTING_DAYS})
             OR is_bot
             OR is_admin
             OR is_owner)

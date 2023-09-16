@@ -11,9 +11,7 @@ def entry_point(session: Session):
         WHERE (JULIANDAY(CURRENT_TIMESTAMP) - JULIANDAY(created_time) > {NUMBER_OF_RESTING_DAYS})
             AND (
                 last_official_submission_timestamp IS NULL or
-                second_to_last_human_feedback_timestamp IS NULL or
-                julianday(current_timestamp) - julianday(last_official_submission_timestamp) > {NUMBER_OF_RESTING_DAYS} or
-                julianday(current_timestamp) - julianday(second_to_last_human_feedback_timestamp) > {NUMBER_OF_RESTING_DAYS})
+                julianday(current_timestamp) - julianday(last_official_submission_timestamp) > {NUMBER_OF_RESTING_DAYS})
             AND (not is_bot)
             AND (not is_admin)
             AND (not is_owner)

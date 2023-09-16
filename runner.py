@@ -43,6 +43,8 @@ while True:
             if counter == 0:
                 slack_user_bridge.entry_point(app, session)
                 rating_calculator.entry_point(session)
+                medal_awarder.entry_point(session)
+                user_elimination.entry_point(session)
 
             counter += 1
             if counter == FETCH_COUNTER:
@@ -54,9 +56,7 @@ while True:
             submission_task_bridge.entry_point(app, session, grader)
             submission_timestamp_bridge.entry_point(session)
             human_feedback_timestamp_bridge.entry_point(session)
-            user_elimination.entry_point(session)
             user_reactivation.entry_point(session)
-            medal_awarder.entry_point(session)
     except (sqlite3.OperationalError, exc.OperationalError) as e:
         print(e)
         print("Database is locked. Data are not updated")
