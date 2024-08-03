@@ -20,6 +20,7 @@ export SLACK_SIGNING_SECRET=<your Slack signing secret>
 export PORT=<port>
 export SECRET_KEY=<secret_key>
 export ADMIN_PORT=<admin_port>
+export ADMIN_PASSWORD=<admin_password>
 export USER_PORT=<user_port>
 ```
 
@@ -44,6 +45,7 @@ alembic upgrade heads
 sudo ufw allow $PORT
 sudo ufw allow 5000
 gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
+gunicorn --bind 0.0.0.0:$ADMIN_PORT wsgi:add_task_app
 gunicorn --bind 0.0.0.0:5000 wsgi2:app
 ```
 ## Load remote database
