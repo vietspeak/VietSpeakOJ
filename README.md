@@ -45,7 +45,7 @@ alembic upgrade heads
 sudo ufw allow $PORT
 sudo ufw allow 5000
 gunicorn --bind 0.0.0.0:$PORT wsgi:flask_app
-gunicorn --bind 0.0.0.0:$ADMIN_PORT wsgi:add_task_app
+gunicorn --bind 0.0.0.0:$ADMIN_PORT add_task_app:app
 gunicorn --bind 0.0.0.0:5000 wsgi2:app
 ```
 ## Load remote database
